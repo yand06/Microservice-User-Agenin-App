@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: AGENIN
+    version: 1.0.0
+  banner:
+    location: classpath:/banner-text.txt
+  dataSource:
+    url: jdbc:postgresql://${AGENIN_DB_HOST}:${AGENIN_DB_PORT}/${AGENIN_DB_NAME}
+    username: ${AGENIN_DB_USERNAME}
+    password: ${AGENIN_DB_PASSWORD}
+  jpa:
+    properties:
+      hibernate:
+        globally_quoted_identifiers: true
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+server:
+  port: 8181
