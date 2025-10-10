@@ -2,6 +2,7 @@ package com.jdt16.agenin.users.controller.module;
 
 import com.jdt16.agenin.users.dto.request.UserLoginRequest;
 import com.jdt16.agenin.users.dto.request.UserRequest;
+import com.jdt16.agenin.users.dto.request.UserStatusUpdateRequest;
 import com.jdt16.agenin.users.dto.response.*;
 import com.jdt16.agenin.users.service.interfacing.module.UserService;
 import com.jdt16.agenin.users.utility.RestApiPathUtility;
@@ -80,6 +81,21 @@ public class UserController {
         response.setRestAPIResponseResults(userProfile);
 
         return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/delete/{id}")
+    public ResponseEntity<RestApiResponse<UserResponse>> softDeleteOrUpdateStatus(
+            @Valid @RequestBody UserStatusUpdateRequest request) {
+
+        UserResponse data = userService.updateUserStatus(request);
+
+        RestApiResponse<UserResponse> resp = RestApiResponse.<UserResponse>builder()
+                .restAPIResponseCode(HttpStatus.OK.value())
+                .restAPIResponseMessage("User status updated")
+                .restAPIResponseResults(data)
+                .build();
+
+        return ResponseEntity.ok(resp);
     }
 
 

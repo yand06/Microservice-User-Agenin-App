@@ -6,6 +6,7 @@ import com.jdt16.agenin.users.dto.entity.UserEntityDTO;
 import com.jdt16.agenin.users.dto.entity.UserReferralCodeEntityDTO;
 import com.jdt16.agenin.users.dto.request.UserLoginRequest;
 import com.jdt16.agenin.users.dto.request.UserRequest;
+import com.jdt16.agenin.users.dto.request.UserStatusUpdateRequest;
 import com.jdt16.agenin.users.dto.response.UserLoginResponse;
 import com.jdt16.agenin.users.dto.response.UserProfileResponse;
 import com.jdt16.agenin.users.dto.response.UserReferralCodeResponse;
@@ -13,6 +14,7 @@ import com.jdt16.agenin.users.dto.response.UserResponse;
 import com.jdt16.agenin.users.model.repositories.MUserRepositories;
 import com.jdt16.agenin.users.model.repositories.UserReferralCodeRepositories;
 import com.jdt16.agenin.users.service.interfacing.module.UserService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.errors.ResourceNotFoundException;
@@ -145,6 +147,22 @@ public class UserServiceImpl implements UserService {
 
         return response;
     }
+
+    @Override
+    public UserResponse updateUserStatus(UserStatusUpdateRequest userStatusUpdateRequest) {
+        UUID userId = userStatusUpdateRequest.getUserId();
+
+        UserEntityDTO user = userRepositories.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User with id " + userId + " not found"));
+
+        user.setUserEntityDTOStatus(userStatusUpdateRequest.getUserStatus());
+        user.setUserEntityDTOUpdatedDate(LocalDateTime.now());
+
+        UserEntityDTO saved = userRepositories.save(user);
+
+        return getUserResponse(saved);
+    }
+
 
 
     private boolean isEmailLike(String input) {
