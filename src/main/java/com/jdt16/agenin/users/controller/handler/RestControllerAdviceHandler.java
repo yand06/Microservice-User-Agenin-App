@@ -1,6 +1,6 @@
 package com.jdt16.agenin.users.controller.handler;
 
-import com.jdt16.agenin.users.dto.exception.ResourceNotFoundException;
+import com.jdt16.agenin.users.dto.exception.CoreThrowHandlerException;
 import com.jdt16.agenin.users.dto.response.RestApiResponse;
 import com.jdt16.agenin.users.dto.response.RestApiResponseError;
 import lombok.RequiredArgsConstructor;
@@ -97,9 +97,9 @@ public class RestControllerAdviceHandler {
     /**
      * Handle ResourceNotFoundException - User not found
      */
-    @ExceptionHandler(ResourceNotFoundException.class)
+    @ExceptionHandler(CoreThrowHandlerException.class)
     public ResponseEntity<RestApiResponse<Void>> handleResourceNotFoundException(
-            ResourceNotFoundException ex) {
+            CoreThrowHandlerException ex) {
 
         log.error("ResourceNotFoundException: {}", ex.getMessage());
 

@@ -4,6 +4,7 @@ import com.jdt16.agenin.users.components.generator.ReferralCodeGenerator;
 import com.jdt16.agenin.users.components.handler.UserAuthJWT;
 import com.jdt16.agenin.users.dto.entity.UserEntityDTO;
 import com.jdt16.agenin.users.dto.entity.UserReferralCodeEntityDTO;
+import com.jdt16.agenin.users.dto.exception.CoreThrowHandlerException;
 import com.jdt16.agenin.users.dto.request.UserLoginRequest;
 import com.jdt16.agenin.users.dto.request.UserRequest;
 import com.jdt16.agenin.users.dto.response.UserLoginResponse;
@@ -38,6 +39,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse saveUser(UserRequest userRequest) {
+        Optional<UserEntityDTO> existingUserEmail = userRepositories.findByUserEntityDTOEmailIgnoreCase(userRequest.getUserEntityDTOEmail());
+        Optional<UserEntityDTO> existingUserPhoneNumber = userRepositories.findByUserEntityDTOPhoneNumber(userRequest.getUserEntityDTOPhoneNumber());
+        if (existingUserEmail.isPresent()) {
+            throw new CoreThrowHandlerException("Pengguna sudah ada dengan alamat email: " + userRequest.getUserEntityDTOEmail());
+        }
+        if (existingUserPhoneNumber.isPresent()) {
+            throw new CoreThrowHandlerException("Pengguna sudah ada dengan nomor telepon: " + userRequest.getUserEntityDTOPhoneNumber());
+        }
         UserEntityDTO userEntityDTO = new UserEntityDTO();
         userEntityDTO.setUserEntityDTOId(UUID.randomUUID());
         userEntityDTO.setUserEntityDTOFullName(userRequest.getUserEntityDTOFullName());
