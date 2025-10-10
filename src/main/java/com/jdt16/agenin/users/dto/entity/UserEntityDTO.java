@@ -29,10 +29,10 @@ public class UserEntityDTO {
     @Column(name = ColumnNameEntityUtility.COLUMN_USERS_FULLNAME, nullable = false)
     private String userEntityDTOFullName;
 
-    @Column(name = ColumnNameEntityUtility.COLUMN_USERS_PHONE_NUMBER, nullable = false)
+    @Column(name = ColumnNameEntityUtility.COLUMN_USERS_PHONE_NUMBER, unique = true, nullable = false)
     private String userEntityDTOPhoneNumber;
 
-    @Column(name = ColumnNameEntityUtility.COLUMN_USERS_EMAIL, nullable = false)
+    @Column(name = ColumnNameEntityUtility.COLUMN_USERS_EMAIL, unique = true, nullable = false)
     private String userEntityDTOEmail;
 
     @Column(name = ColumnNameEntityUtility.COLUMN_USERS_PASSWORD, nullable = false)

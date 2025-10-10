@@ -1,9 +1,12 @@
 package com.jdt16.agenin.users.service.implementation.module;
 
 import com.jdt16.agenin.users.components.generator.ReferralCodeGenerator;
+import com.jdt16.agenin.users.components.handler.UserAuthJWT;
 import com.jdt16.agenin.users.dto.entity.UserEntityDTO;
 import com.jdt16.agenin.users.dto.entity.UserReferralCodeEntityDTO;
+import com.jdt16.agenin.users.dto.request.UserLoginRequest;
 import com.jdt16.agenin.users.dto.request.UserRequest;
+import com.jdt16.agenin.users.dto.response.UserLoginResponse;
 import com.jdt16.agenin.users.dto.response.UserReferralCodeResponse;
 import com.jdt16.agenin.users.dto.response.UserResponse;
 import com.jdt16.agenin.users.model.repositories.MUserRepositories;
@@ -16,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -27,6 +31,8 @@ public class UserServiceImpl implements UserService {
     private final UserReferralCodeRepositories userReferralCodeRepositories;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final ReferralCodeGenerator referralCodeGenerator = new ReferralCodeGenerator();
+    private final UserAuthJWT userAuthJWT;
+    private final UserEntityDTO userEntityDTO = new UserEntityDTO();
 
     @Override
     public UserResponse saveUser(UserRequest userRequest) {
@@ -60,6 +66,48 @@ public class UserServiceImpl implements UserService {
         return userReferralCodeResponse;
     }
 
+    @Override
+    public UserLoginResponse login(UserLoginRequest userLoginRequest) {
+        String identifier = userLoginRequest.getUserIdentifier();
+        UserLoginResponse userLoginResponse = new UserLoginResponse();
+
+        Optional<UserEntityDTO> userOpt = isEmailLike(identifier)
+                ? userRepositories.findByUserEntityDTOEmailIgnoreCase(identifier)
+                : userRepositories.findByUserEntityDTOPhoneNumber(identifier);
+
+        if (userOpt.isEmpty()) {
+            log.warn("Login failed: user not found for identifier {}", identifier);
+            return null;
+        }
+
+        UserEntityDTO user = userOpt.get();
+
+        boolean ok = passwordEncoder.matches(
+                userLoginRequest.getUserPassword(),
+                user.getUserEntityDTOPassword()
+        );
+
+        String accessToken = userAuthJWT.generateAuthToken(user, 3600);
+        userLoginResponse.setUserLoginResponseToken(accessToken);
+
+        if (!ok) {
+            log.warn("Login failed: invalid password for user {}", identifier);
+            return null;
+        }
+
+        userLoginResponse.setUserEntityDTOId(user.getUserEntityDTOId());
+        userLoginResponse.setUserEntityDTOFullName(user.getUserEntityDTOFullName());
+        userLoginResponse.setUserEntityDTOEmail(user.getUserEntityDTOEmail());
+        userLoginResponse.setUserEntityDTOPhoneNumber(user.getUserEntityDTOPhoneNumber());
+        userLoginResponse.setUserEntityDTOIsAdmin(Boolean.TRUE.equals(user.getUserEntityDTOIsAdmin()));
+
+        return userLoginResponse;
+    }
+
+    private boolean isEmailLike(String input) {
+        return input != null && input.contains("@");
+    }
+
     private static UserResponse getUserResponse(UserEntityDTO userEntityDTO) {
         UserResponse userResponse = new UserResponse();
         userResponse.setUserEntityDTOId(userEntityDTO.getUserEntityDTOId());
@@ -75,3 +123,5 @@ public class UserServiceImpl implements UserService {
     }
 
 }
+
+

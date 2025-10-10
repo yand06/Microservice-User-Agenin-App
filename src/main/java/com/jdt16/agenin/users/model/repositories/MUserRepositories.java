@@ -14,6 +14,7 @@ public interface MUserRepositories extends JpaRepository<UserEntityDTO, UUID> {
 
     Optional<UserEntityDTO> findByUserEntityDTOId(UUID userId);
 
-    Optional<UserEntityDTO> findByUserEntityDTOEmail(String userEntityDTOEmail);
+    Optional<UserEntityDTO> findByUserEntityDTOEmailIgnoreCase(String userEntityDTOEmail);
 
+    Optional<UserEntityDTO> findByUserEntityDTOPhoneNumber(String userEntityDTOPhoneNumber);
 }
