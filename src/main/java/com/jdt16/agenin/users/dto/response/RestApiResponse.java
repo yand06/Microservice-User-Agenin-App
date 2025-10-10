@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class RestApiResponse<T> {
 
-    @JsonProperty("code")
+    @JsonProperty("status")
     private Integer restAPIResponseCode;
 
     @JsonProperty("results")

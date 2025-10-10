@@ -34,9 +34,11 @@ public class UserAuthJWTUtility {
 
     @Bean
     public JwtEncoder jwtEncoder() throws GeneralSecurityException, IOException {
+        // Load RSA private and public keys from the resources directory
         RSAPrivateKey privateKey = loadPrivateKey("certificate/private-key.pem");
         RSAPublicKey publicKey = loadPublicKey("certificate/public-key.pem");
 
+        // Create RSA key representation for JWK
         JWK jwk = new RSAKey.Builder(publicKey).privateKey(privateKey).build();
         JWKSource<SecurityContext> jwkSource = new ImmutableJWKSet<>(new JWKSet(jwk));
         return new NimbusJwtEncoder(jwkSource);
@@ -44,6 +46,7 @@ public class UserAuthJWTUtility {
 
     @Bean
     public JwtDecoder jwtDecoder() throws GeneralSecurityException, IOException {
+        // Use the public key to create the JwtDecoder
         RSAPublicKey publicKey = loadPublicKey("certificate/public-key.pem");
         return NimbusJwtDecoder.withPublicKey(publicKey).build();
     }

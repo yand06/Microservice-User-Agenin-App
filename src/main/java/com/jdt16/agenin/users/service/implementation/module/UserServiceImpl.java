@@ -14,6 +14,7 @@ import com.jdt16.agenin.users.model.repositories.UserReferralCodeRepositories;
 import com.jdt16.agenin.users.service.interfacing.module.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -55,16 +56,29 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserReferralCodeResponse generateReferralCode(UUID userId) {
-        UserReferralCodeEntityDTO userReferralCodeEntityDTO = new UserReferralCodeEntityDTO();
-        userReferralCodeEntityDTO.setUserReferralEntityDTOId(UUID.randomUUID());
-        userReferralCodeEntityDTO.setUserReferralEntityDTOUserId(userId);
-        userReferralCodeEntityDTO.setUserReferralEntityDTOCode(referralCodeGenerator.generateReferralCode());
+        if (!userRepositories.existsById(userId)) {
+            throw new ResourceNotFoundException("User not found with id: " + userId);
+        }
 
-        userReferralCodeRepositories.save(userReferralCodeEntityDTO);
-        UserReferralCodeResponse userReferralCodeResponse = new UserReferralCodeResponse();
-        userReferralCodeResponse.setUserReferralEntityDTOCode(userReferralCodeEntityDTO.getUserReferralEntityDTOCode());
-        return userReferralCodeResponse;
+        UserReferralCodeEntityDTO referralCodeEntityDTO = new UserReferralCodeEntityDTO();
+        referralCodeEntityDTO.setUserReferralEntityDTOId(UUID.randomUUID());
+        referralCodeEntityDTO.setUserReferralEntityDTOUserId(userId);
+        referralCodeEntityDTO.setUserReferralEntityDTOCreatedAt(LocalDateTime.now());
+
+        String code = referralCodeGenerator.generateReferralCode();
+        if (code == null || code.isEmpty()) {
+            throw new IllegalStateException("Referral code generation failed");
+        }
+        referralCodeEntityDTO.setUserReferralEntityDTOCode(code);
+
+        userReferralCodeRepositories.save(referralCodeEntityDTO);
+
+        return UserReferralCodeResponse.builder()
+                .userReferralEntityDTOCode(code)
+                .userReferralEntityDTOCreatedAt(LocalDateTime.now())
+                .build();
     }
+
 
     @Override
     public UserLoginResponse login(UserLoginRequest userLoginRequest) {

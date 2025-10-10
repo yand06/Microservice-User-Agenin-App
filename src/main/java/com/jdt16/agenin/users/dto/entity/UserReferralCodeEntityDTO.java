@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -25,12 +26,12 @@ public class UserReferralCodeEntityDTO {
     @Column(name = ColumnNameEntityUtility.COLUMN_USER_REFERRAL_CODE_ID, nullable = false, updatable = false)
     private UUID userReferralEntityDTOId;
 
-    @Column(name = ColumnNameEntityUtility.COLUMN_USERS_ID, nullable = false, updatable = false)
+    @Column(name = ColumnNameEntityUtility.COLUMN_ID_USER, nullable = false, updatable = false)
     private UUID userReferralEntityDTOUserId;
 
     @Column(name = ColumnNameEntityUtility.COLUMN_USER_REFERRAL_CODE, nullable = false)
     private String userReferralEntityDTOCode;
 
     @Column(name = ColumnNameEntityUtility.COLUMN_USER_REFERRAL_CODE_CREATED_AT, nullable = false)
-    private String userReferralEntityDTOCreatedAt;
+    private LocalDateTime userReferralEntityDTOCreatedAt;
 }

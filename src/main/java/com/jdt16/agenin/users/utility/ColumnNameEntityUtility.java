@@ -19,7 +19,7 @@ public class ColumnNameEntityUtility {
 
     /* USER_REFERRAL_CODE */
     public static final String COLUMN_USER_REFERRAL_CODE_ID = "user_referral_code_id";
-    public static final String COLUMN_USER_ID = "user_id";
+    public static final String COLUMN_ID_USER = "id_user";
     public static final String COLUMN_USER_REFERRAL_CODE = "user_referral_code";
     public static final String COLUMN_USER_REFERRAL_CODE_CREATED_AT = "user_referral_code_created_at";
 }

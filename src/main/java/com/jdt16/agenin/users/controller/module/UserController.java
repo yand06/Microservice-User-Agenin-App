@@ -40,7 +40,7 @@ public class UserController {
     }
 
     @PostMapping(RestApiPathUtility.API_PATH_MODULE_REFERRAL_CODE + RestApiPathUtility.API_PATH_BY_ID)
-    public ResponseEntity<RestApiResponse<?>> generateReferralCode(@PathVariable UUID id){
+    public ResponseEntity<RestApiResponse<?>> generateReferralCode(@PathVariable UUID id) {
         UserReferralCodeResponse userReferralCodeResponse = userService.generateReferralCode(id);
 
         RestApiResponse<UserReferralCodeResponse> apiResponse = new RestApiResponse<>();
@@ -51,36 +51,24 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 
-
-//    @PostMapping(RestApiPathUtility.API_PATH_MODULE_LOGIN)
-//    public ResponseEntity<RestApiResponse<?>> login(@Valid @RequestBody UserLoginRequest userLoginRequest) {
-//        UserLoginResponse userLoginResponse = userService.login(userLoginRequest);
-//
-//        RestApiResponse<UserLoginResponse> apiResponse = new RestApiResponse<>();
-//        apiResponse.setRestAPIResponseCode((HttpStatus.OK.value()));
-//        apiResponse.setRestAPIResponseMessage("User login successful");
-//        apiResponse.setRestAPIResponseResults(userLoginResponse);
-//
-//        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
-//    }
     @PostMapping(RestApiPathUtility.API_PATH_MODULE_LOGIN)
     public ResponseEntity<RestApiResponse<?>> login(@Valid @RequestBody UserLoginRequest userLoginRequest) {
         UserLoginResponse userLoginResponse = userService.login(userLoginRequest);
 
         RestApiResponse<UserLoginResponse> apiResponse = new RestApiResponse<>();
 
-    if (userLoginResponse == null) {
-        apiResponse.setRestAPIResponseCode(HttpStatus.UNAUTHORIZED.value());
-        apiResponse.setRestAPIResponseMessage("Invalid email/phone number or password or user not found");
-        apiResponse.setRestAPIResponseResults(null);
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiResponse);
-    }
+        if (userLoginResponse == null) {
+            apiResponse.setRestAPIResponseCode(HttpStatus.UNAUTHORIZED.value());
+            apiResponse.setRestAPIResponseMessage("Invalid email/phone number or password or user not found");
+            apiResponse.setRestAPIResponseResults(null);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiResponse);
+        }
 
         apiResponse.setRestAPIResponseCode(HttpStatus.OK.value());
         apiResponse.setRestAPIResponseMessage("User login successful");
         apiResponse.setRestAPIResponseResults(userLoginResponse);
 
         return ResponseEntity.ok(apiResponse);
-}
+    }
 
 }
