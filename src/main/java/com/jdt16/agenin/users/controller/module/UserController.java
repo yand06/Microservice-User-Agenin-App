@@ -2,6 +2,7 @@ package com.jdt16.agenin.users.controller.module;
 
 import com.jdt16.agenin.users.dto.request.UserLoginRequest;
 import com.jdt16.agenin.users.dto.request.UserRequest;
+import com.jdt16.agenin.users.dto.request.UserUpdateRequest;
 import com.jdt16.agenin.users.dto.response.*;
 import com.jdt16.agenin.users.service.interfacing.module.UserService;
 import com.jdt16.agenin.users.utility.RestApiPathUtility;
@@ -80,6 +81,27 @@ public class UserController {
         response.setRestAPIResponseResults(userProfile);
 
         return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping(RestApiPathUtility.API_PATH_MODULE_CHANGE_PROFILE + RestApiPathUtility.API_PATH_BY_ID)
+    public ResponseEntity<RestApiResponse<UserUpdateResponse>> updateUserProfile(
+            @PathVariable UUID id,
+            @RequestBody UserUpdateRequest req) {
+
+        UserUpdateResponse result = userService.updateUserProfile(req, id);
+        RestApiResponse<UserUpdateResponse> resp = new RestApiResponse<>();
+
+        if (result == null) {
+            resp.setRestAPIResponseCode(HttpStatus.CONFLICT.value());
+            resp.setRestAPIResponseMessage("Invalid data / duplicate email/phone / user not found");
+            resp.setRestAPIResponseResults(null);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(resp);
+        }
+
+        resp.setRestAPIResponseCode(HttpStatus.OK.value());
+        resp.setRestAPIResponseMessage("Update user profile success");
+        resp.setRestAPIResponseResults(result);
+        return ResponseEntity.ok(resp);
     }
 
 

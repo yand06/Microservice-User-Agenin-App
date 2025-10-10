@@ -19,4 +19,5 @@ public class RestApiPathUtility {
     public static final String API_PATH_MODULE_CHANGE_EMAIL = "/change-email";
     public static final String API_PATH_MODULE_CHANGE_PASSWORD = "/change-password";
     public static final String API_PATH_MODULE_REFERRAL_CODE = "/referral-code";
+    public static final String API_PATH_MODULE_CHANGE_PROFILE = "/change-profile";
 }

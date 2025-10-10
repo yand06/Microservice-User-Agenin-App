@@ -6,10 +6,8 @@ import com.jdt16.agenin.users.dto.entity.UserEntityDTO;
 import com.jdt16.agenin.users.dto.entity.UserReferralCodeEntityDTO;
 import com.jdt16.agenin.users.dto.request.UserLoginRequest;
 import com.jdt16.agenin.users.dto.request.UserRequest;
-import com.jdt16.agenin.users.dto.response.UserLoginResponse;
-import com.jdt16.agenin.users.dto.response.UserProfileResponse;
-import com.jdt16.agenin.users.dto.response.UserReferralCodeResponse;
-import com.jdt16.agenin.users.dto.response.UserResponse;
+import com.jdt16.agenin.users.dto.request.UserUpdateRequest;
+import com.jdt16.agenin.users.dto.response.*;
 import com.jdt16.agenin.users.model.repositories.MUserRepositories;
 import com.jdt16.agenin.users.model.repositories.UserReferralCodeRepositories;
 import com.jdt16.agenin.users.service.interfacing.module.UserService;
@@ -141,6 +139,61 @@ public class UserServiceImpl implements UserService {
         return response;
     }
 
+    @Override
+    public UserUpdateResponse updateUserProfile(UserUpdateRequest req, UUID id) {
+        if (id == null
+                || req == null
+                || isBlank(req.getUserEntityDTOEmail())
+                || isBlank(req.getUserEntityDTOPhoneNumber())
+                || isBlank(req.getUserEntityDTOPassword())) {
+            log.warn("Update profile failed: invalid request body or missing fields (id={})", id);
+            return null;
+        }
+
+        Optional<UserEntityDTO> userOpt = userRepositories.findById(id);
+        if (userOpt.isEmpty()) {
+            log.warn("Update profile failed: user not found (id={})", id);
+            return null;
+        }
+        UserEntityDTO user = userOpt.get();
+
+        String newEmail = req.getUserEntityDTOEmail().trim();
+        if (!newEmail.equalsIgnoreCase(user.getUserEntityDTOEmail())) {
+            Optional<UserEntityDTO> byEmail = userRepositories.findByUserEntityDTOEmailIgnoreCase(newEmail);
+            if (byEmail.isPresent() && !byEmail.get().getUserEntityDTOId().equals(user.getUserEntityDTOId())) {
+                log.warn("Update profile failed: email already exists ({})", newEmail);
+                return null;
+            }
+        }
+
+        String newPhone = req.getUserEntityDTOPhoneNumber().trim();
+        if (!newPhone.equals(user.getUserEntityDTOPhoneNumber())) {
+            Optional<UserEntityDTO> byPhone = userRepositories.findByUserEntityDTOPhoneNumber(newPhone);
+            if (byPhone.isPresent() && !byPhone.get().getUserEntityDTOId().equals(user.getUserEntityDTOId())) {
+                log.warn("Update profile failed: phone already exists ({})", newPhone);
+                return null;
+            }
+        }
+
+        user.setUserEntityDTOEmail(newEmail);
+        user.setUserEntityDTOPhoneNumber(newPhone);
+        user.setUserEntityDTOPassword(passwordEncoder.encode(req.getUserEntityDTOPassword()));
+        user.setUserEntityDTOUpdatedDate(LocalDateTime.now());
+
+        userRepositories.save(user);
+
+        UserUpdateResponse resp = new UserUpdateResponse();
+        resp.setUserEntityDTOId(user.getUserEntityDTOId());
+        resp.setUserEntityDTOFullName(user.getUserEntityDTOFullName());
+        resp.setUserEntityDTOEmail(user.getUserEntityDTOEmail());
+        resp.setUserEntityDTOPhoneNumber(user.getUserEntityDTOPhoneNumber());
+        resp.setUserEntityDTOUpdatedDate(user.getUserEntityDTOUpdatedDate());
+        return resp;
+    }
+
+    private boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
+    }
 
     private boolean isEmailLike(String input) {
         return input != null && input.contains("@");
