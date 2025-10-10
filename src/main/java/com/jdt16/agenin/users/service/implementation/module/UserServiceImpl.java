@@ -47,7 +47,6 @@ public class UserServiceImpl implements UserService {
         if (existingUserPhoneNumber.isPresent()) {
             throw new CoreThrowHandlerException("Pengguna sudah ada dengan nomor telepon: " + userRequest.getUserEntityDTOPhoneNumber());
         }
-        UserEntityDTO userEntityDTO = new UserEntityDTO();
         userEntityDTO.setUserEntityDTOId(UUID.randomUUID());
         userEntityDTO.setUserEntityDTOFullName(userRequest.getUserEntityDTOFullName());
         userEntityDTO.setUserEntityDTOEmail(userRequest.getUserEntityDTOEmail());
