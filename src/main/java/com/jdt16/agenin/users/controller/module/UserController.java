@@ -2,10 +2,7 @@ package com.jdt16.agenin.users.controller.module;
 
 import com.jdt16.agenin.users.dto.request.UserLoginRequest;
 import com.jdt16.agenin.users.dto.request.UserRequest;
-import com.jdt16.agenin.users.dto.response.RestApiResponse;
-import com.jdt16.agenin.users.dto.response.UserLoginResponse;
-import com.jdt16.agenin.users.dto.response.UserReferralCodeResponse;
-import com.jdt16.agenin.users.dto.response.UserResponse;
+import com.jdt16.agenin.users.dto.response.*;
 import com.jdt16.agenin.users.service.interfacing.module.UserService;
 import com.jdt16.agenin.users.utility.RestApiPathUtility;
 import jakarta.validation.Valid;
@@ -70,5 +67,20 @@ public class UserController {
 
         return ResponseEntity.ok(apiResponse);
     }
+
+    @GetMapping(RestApiPathUtility.API_PATH_MODULE_PROFILE + RestApiPathUtility.API_PATH_BY_ID)
+    public ResponseEntity<RestApiResponse<UserProfileResponse>> getUserProfile(
+            @PathVariable UUID id) {
+
+        UserProfileResponse userProfile = userService.getUserProfile(id);
+
+        RestApiResponse<UserProfileResponse> response = new RestApiResponse<>();
+        response.setRestAPIResponseCode(200);
+        response.setRestAPIResponseMessage("Get user profile success");
+        response.setRestAPIResponseResults(userProfile);
+
+        return ResponseEntity.ok(response);
+    }
+
 
 }

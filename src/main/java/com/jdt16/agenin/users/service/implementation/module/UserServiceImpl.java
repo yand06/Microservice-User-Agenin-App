@@ -7,6 +7,7 @@ import com.jdt16.agenin.users.dto.entity.UserReferralCodeEntityDTO;
 import com.jdt16.agenin.users.dto.request.UserLoginRequest;
 import com.jdt16.agenin.users.dto.request.UserRequest;
 import com.jdt16.agenin.users.dto.response.UserLoginResponse;
+import com.jdt16.agenin.users.dto.response.UserProfileResponse;
 import com.jdt16.agenin.users.dto.response.UserReferralCodeResponse;
 import com.jdt16.agenin.users.dto.response.UserResponse;
 import com.jdt16.agenin.users.model.repositories.MUserRepositories;
@@ -117,6 +118,29 @@ public class UserServiceImpl implements UserService {
 
         return userLoginResponse;
     }
+
+    @Override
+    public UserProfileResponse getUserProfile(UUID userId) {
+        // Cari user berdasarkan ID
+        UserEntityDTO user = userRepositories.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+        // Misal kita ambil total transaksi user dari tabel transaksi (sementara static dulu)
+        int totalTransactionAmount = 200000; // TODO: ganti dengan query ke service transaksi
+
+        // Buat response
+        UserProfileResponse response = new UserProfileResponse();
+        response.setUserEntityDTOId(user.getUserEntityDTOId());
+        response.setUserEntityDTOFullName(user.getUserEntityDTOFullName());
+        response.setUserEntityDTOEmail(user.getUserEntityDTOEmail());
+        response.setUserEntityDTOPhoneNumber(user.getUserEntityDTOPhoneNumber());
+        response.setUserTransactionTotalAmount(totalTransactionAmount);
+        response.setUserTransactionDate(LocalDateTime.now()); // sementara dummy
+        response.setUserEntityDTOCreatedDate(user.getUserEntityDTOCreatedDate());
+
+        return response;
+    }
+
 
     private boolean isEmailLike(String input) {
         return input != null && input.contains("@");
