@@ -56,8 +56,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserReferralCodeResponse generateReferralCode(UUID userId) {
+
         if (!userRepositories.existsById(userId)) {
             throw new ResourceNotFoundException("User not found with id: " + userId);
+        }
+
+        if (userReferralCodeRepositories.existsByUserReferralEntityDTOUserId(userId)) {
+            throw new IllegalStateException("Pengguna sudah memiliki kode referensi.");
         }
 
         UserReferralCodeEntityDTO referralCodeEntityDTO = new UserReferralCodeEntityDTO();

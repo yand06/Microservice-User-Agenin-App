@@ -2,10 +2,7 @@ package com.jdt16.agenin.users.dto.entity;
 
 import com.jdt16.agenin.users.utility.ColumnNameEntityUtility;
 import com.jdt16.agenin.users.utility.TableNameEntityUtility;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +16,10 @@ import java.util.UUID;
 @NoArgsConstructor
 @Getter
 @Setter
-@Table(name = TableNameEntityUtility.TABLE_USER_REFERRAL_CODE)
+@Table(
+        name = TableNameEntityUtility.TABLE_USER_REFERRAL_CODE,
+        uniqueConstraints = @UniqueConstraint(columnNames = ColumnNameEntityUtility.COLUMN_ID_USER)
+)
 public class UserReferralCodeEntityDTO {
 
     @Id

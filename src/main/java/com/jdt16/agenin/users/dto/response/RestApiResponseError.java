@@ -14,6 +14,6 @@ import java.util.Map;
 @NoArgsConstructor
 @Builder
 public class RestApiResponseError {
-    @JsonProperty("error")
+    @JsonProperty("error-details")
     private Map<String, Serializable> restAPIResponseRequestError;
 }
