@@ -11,7 +11,11 @@ import java.util.UUID;
 
 public interface UserService {
     UserResponse saveUser(UserRequest userRequest);
+
     UserReferralCodeResponse generateReferralCode(UUID userID);
-    UserLoginResponse login (UserLoginRequest userLoginRequest);
-    UserProfileResponse getUserProfile (UUID userId);
+
+    UserLoginResponse login(UserLoginRequest userLoginRequest);
+
+    UserProfileResponse getUserProfile(UUID userId);
+
 }

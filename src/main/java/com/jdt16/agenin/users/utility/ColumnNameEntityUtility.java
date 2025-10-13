@@ -39,4 +39,9 @@ public class ColumnNameEntityUtility {
     public static final String COLUMN_REFERENCE_USER_PHONENUMBER = "reference_user_phonenumber";
     public static final String COLUMN_REFERENCE_USER_EMAIL = "reference_user_email";
     public static final String COLUMN_REFERRAL_CODE = "referral_code";
+
+    /* M_USERS_BALANCE */
+    public static final String COLUMN_USERS_BALANCE_ID = "users_balance_id";
+    public static final String COLUMN_USER_BALANCE_AMOUNT = "users_balance_amount";
+    public static final String COLUMN_USER_BALANCE_LAST_UPDATE = "users_balance_last_update";
 }

@@ -82,5 +82,19 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/dashboard")
+    public ResponseEntity<RestApiResponse<?>> getDashboard(
+            @RequestHeader("X-User-Id") UUID userId
+    ) {
+        UserDashboardResponse result = userDashboardService.getDashboard(userId);
+
+        RestApiResponse<UserDashboardResponse> api = new RestApiResponse<>();
+        api.setRestAPIResponseCode(HttpStatus.OK.value());
+        api.setRestAPIResponseMessage("Get dashboard success");
+        api.setRestAPIResponseResults(result);
+
+        return ResponseEntity.ok(api);
+    }
+
 
 }
