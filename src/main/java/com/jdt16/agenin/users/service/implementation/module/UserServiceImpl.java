@@ -2,6 +2,7 @@ package com.jdt16.agenin.users.service.implementation.module;
 
 import com.jdt16.agenin.users.components.generator.ReferralCodeGenerator;
 import com.jdt16.agenin.users.components.handler.UserAuthJWT;
+import com.jdt16.agenin.users.configuration.security.SecurityConfig;
 import com.jdt16.agenin.users.dto.entity.UserEntityDTO;
 import com.jdt16.agenin.users.dto.entity.UserReferralCodeEntityDTO;
 import com.jdt16.agenin.users.dto.entity.UserRoleEntityDTO;
@@ -19,11 +20,10 @@ import com.jdt16.agenin.users.model.repositories.UserReferralCodeRepositories;
 import com.jdt16.agenin.users.model.repositories.UsersReferralRepositories;
 import com.jdt16.agenin.users.service.interfacing.module.UserService;
 import jakarta.annotation.Nullable;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.errors.ResourceNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -39,13 +39,14 @@ public class UserServiceImpl implements UserService {
     private final UserReferralCodeRepositories userReferralCodeRepositories;
     private final MUserRoleRepositories userRoleRepositories;
     private final UsersReferralRepositories usersReferralRepositories;
-    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final SecurityConfig securityConfig = new SecurityConfig();
     private final ReferralCodeGenerator referralCodeGenerator = new ReferralCodeGenerator();
     private final UserAuthJWT userAuthJWT;
     private final UserEntityDTO userEntityDTO = new UserEntityDTO();
     private UserReferralCodeEntityDTO userReferralCodeEntityDTO = new UserReferralCodeEntityDTO();
 
     @Override
+    @Transactional
     public UserResponse saveUser(UserRequest userRequest) {
         userRepositories.findByUserEntityDTOEmailIgnoreCase(userRequest.getUserEntityDTOEmail())
                 .ifPresent(u -> {
@@ -64,7 +65,7 @@ public class UserServiceImpl implements UserService {
         newUser.setUserEntityDTOFullName(userRequest.getUserEntityDTOFullName());
         newUser.setUserEntityDTOEmail(userRequest.getUserEntityDTOEmail());
         newUser.setUserEntityDTOPhoneNumber(userRequest.getUserEntityDTOPhoneNumber());
-        newUser.setUserEntityDTOPassword(passwordEncoder.encode(userRequest.getUserEntityDTOPassword()));
+        newUser.setUserEntityDTOPassword(securityConfig.passwordEncoder().encode(userRequest.getUserEntityDTOPassword()));
         newUser.setUserEntityDTORoleId(userRoleEntityDTO.getUserRoleEntityDTOId());
         newUser.setUserEntityDTORoleName(userRoleEntityDTO.getUserRoleEntityDTOName());
         newUser.setUserEntityDTOCreatedDate(LocalDateTime.now());
@@ -179,7 +180,7 @@ public class UserServiceImpl implements UserService {
 
         UserEntityDTO user = userOpt.get();
 
-        boolean ok = passwordEncoder.matches(
+        boolean ok = securityConfig.passwordEncoder().matches(
                 userLoginRequest.getUserPassword(),
                 user.getUserEntityDTOPassword()
         );
