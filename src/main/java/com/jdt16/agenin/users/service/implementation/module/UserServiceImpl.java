@@ -27,6 +27,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -164,29 +165,55 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserLoginResponse login(UserLoginRequest userLoginRequest) {
-        return null;
+        String identifier = userLoginRequest.getUserIdentifier();
+        UserLoginResponse userLoginResponse = new UserLoginResponse();
+
+        Optional<UserEntityDTO> userOpt = isEmailLike(identifier)
+                ? userRepositories.findByUserEntityDTOEmailIgnoreCase(identifier)
+                : userRepositories.findByUserEntityDTOPhoneNumber(identifier);
+
+        if (userOpt.isEmpty()) {
+            log.warn("Login failed: user not found for identifier {}", identifier);
+            return null;
+        }
+
+        UserEntityDTO user = userOpt.get();
+
+        boolean ok = passwordEncoder.matches(
+                userLoginRequest.getUserPassword(),
+                user.getUserEntityDTOPassword()
+        );
+
+        String accessToken = userAuthJWT.generateAuthToken(user, 3600);
+        userLoginResponse.setUserLoginResponseToken(accessToken);
+
+        if (!ok) {
+            log.warn("Login failed: invalid password for user {}", identifier);
+            return null;
+        }
+
+        userLoginResponse.setUserEntityDTOId(user.getUserEntityDTOId());
+        userLoginResponse.setUserEntityDTOFullName(user.getUserEntityDTOFullName());
+        userLoginResponse.setUserEntityDTOEmail(user.getUserEntityDTOEmail());
+        userLoginResponse.setUserEntityDTOPhoneNumber(user.getUserEntityDTOPhoneNumber());
+        userLoginResponse.setUserEntityDTORoleName(user.getUserEntityDTORoleName());
+
+        return userLoginResponse;
     }
 
     @Override
     public UserProfileResponse getUserProfile(UUID userId) {
-        // Cari user berdasarkan ID
         UserEntityDTO user = userRepositories.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
 
-        // Misal kita ambil total transaksi user dari tabel transaksi (sementara static dulu)
-        int totalTransactionAmount = 200000; // TODO: ganti dengan query ke service transaksi
+        UserProfileResponse userProfileResponse = new UserProfileResponse();
+        userProfileResponse.setUserEntityDTOId(user.getUserEntityDTOId());
+        userProfileResponse.setUserEntityDTOFullName(user.getUserEntityDTOFullName());
+        userProfileResponse.setUserEntityDTOEmail(user.getUserEntityDTOEmail());
+        userProfileResponse.setUserEntityDTOPhoneNumber(user.getUserEntityDTOPhoneNumber());
+        userProfileResponse.setUserEntityDTORoleName(user.getUserEntityDTORoleName());
 
-        // Buat response
-        UserProfileResponse response = new UserProfileResponse();
-        response.setUserEntityDTOId(user.getUserEntityDTOId());
-        response.setUserEntityDTOFullName(user.getUserEntityDTOFullName());
-        response.setUserEntityDTOEmail(user.getUserEntityDTOEmail());
-        response.setUserEntityDTOPhoneNumber(user.getUserEntityDTOPhoneNumber());
-        response.setUserTransactionTotalAmount(totalTransactionAmount);
-        response.setUserTransactionDate(LocalDateTime.now()); // sementara dummy
-        response.setUserEntityDTOCreatedDate(user.getUserEntityDTOCreatedDate());
-
-        return response;
+        return userProfileResponse;
     }
 
 
