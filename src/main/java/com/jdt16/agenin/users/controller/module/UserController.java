@@ -49,18 +49,12 @@ public class UserController {
     }
 
     @PostMapping(RestApiPathUtility.API_PATH_MODULE_LOGIN)
-    public ResponseEntity<RestApiResponse<?>> login(@Valid @RequestBody UserLoginRequest userLoginRequest) {
+    public ResponseEntity<RestApiResponse<UserLoginResponse>> login(
+            @Valid @RequestBody UserLoginRequest userLoginRequest
+    ) {
         UserLoginResponse userLoginResponse = userService.login(userLoginRequest);
 
         RestApiResponse<UserLoginResponse> apiResponse = new RestApiResponse<>();
-
-        if (userLoginResponse == null) {
-            apiResponse.setRestAPIResponseCode(HttpStatus.UNAUTHORIZED.value());
-            apiResponse.setRestAPIResponseMessage("Invalid email/phone number or password or user not found");
-            apiResponse.setRestAPIResponseResults(null);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiResponse);
-        }
-
         apiResponse.setRestAPIResponseCode(HttpStatus.OK.value());
         apiResponse.setRestAPIResponseMessage("User login successful");
         apiResponse.setRestAPIResponseResults(userLoginResponse);
@@ -81,20 +75,4 @@ public class UserController {
 
         return ResponseEntity.ok(response);
     }
-
-    @GetMapping("/dashboard")
-    public ResponseEntity<RestApiResponse<?>> getDashboard(
-            @RequestHeader("X-User-Id") UUID userId
-    ) {
-        UserDashboardResponse result = userDashboardService.getDashboard(userId);
-
-        RestApiResponse<UserDashboardResponse> api = new RestApiResponse<>();
-        api.setRestAPIResponseCode(HttpStatus.OK.value());
-        api.setRestAPIResponseMessage("Get dashboard success");
-        api.setRestAPIResponseResults(result);
-
-        return ResponseEntity.ok(api);
-    }
-
-
 }

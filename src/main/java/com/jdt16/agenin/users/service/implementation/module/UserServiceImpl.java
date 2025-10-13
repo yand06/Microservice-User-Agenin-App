@@ -174,8 +174,7 @@ public class UserServiceImpl implements UserService {
                 : userRepositories.findByUserEntityDTOPhoneNumber(identifier);
 
         if (userOpt.isEmpty()) {
-            log.warn("Login failed: user not found for identifier {}", identifier);
-            return null;
+            throw new IllegalStateException("Email atau nomor telepon tidak ditemukan");
         }
 
         UserEntityDTO user = userOpt.get();
@@ -189,8 +188,7 @@ public class UserServiceImpl implements UserService {
         userLoginResponse.setUserLoginResponseToken(accessToken);
 
         if (!ok) {
-            log.warn("Login failed: invalid password for user {}", identifier);
-            return null;
+            throw new IllegalStateException("Password salah");
         }
 
         userLoginResponse.setUserEntityDTOId(user.getUserEntityDTOId());
