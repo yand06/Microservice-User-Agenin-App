@@ -38,18 +38,15 @@ public class UserEntityDTO {
     @Column(name = ColumnNameEntityUtility.COLUMN_USERS_PASSWORD, nullable = false)
     private String userEntityDTOPassword;
 
-    @Column(name = ColumnNameEntityUtility.COLUMN_USERS_IS_ADMIN, nullable = false)
-    private Boolean userEntityDTOIsAdmin;
+    @Column(name = ColumnNameEntityUtility.COLUMN_USERS_ROLE_ID, nullable = false)
+    private UUID userEntityDTORoleId;
 
-    @Column(name = ColumnNameEntityUtility.COLUMN_USERS_IS_PARENT, nullable = false)
-    private Boolean userEntityDTOIsParent;
+    @Column(name = ColumnNameEntityUtility.COLUMN_USERS_ROLE_NAME, nullable = false)
+    private String userEntityDTORoleName;
 
     @Column(name = ColumnNameEntityUtility.COLUMN_USERS_CREATED_DATE, nullable = false)
     private LocalDateTime userEntityDTOCreatedDate;
 
     @Column(name = ColumnNameEntityUtility.COLUMN_USERS_UPDATED_DATE, nullable = false)
     private LocalDateTime userEntityDTOUpdatedDate;
-
-    @Column(name = ColumnNameEntityUtility.COLUMN_USERS_STATUS, nullable = false)
-    private Boolean userEntityDTOStatus;
 }

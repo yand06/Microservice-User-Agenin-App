@@ -25,7 +25,7 @@ public class UserController {
     @PostMapping(RestApiPathUtility.API_PATH_CREATE)
     public ResponseEntity<RestApiResponse<?>> createUser(
             @Valid @RequestBody UserRequest userRequest
-    ) throws Exception {
+    ) {
         UserResponse userResponse = userService.saveUser(userRequest);
 
         RestApiResponse<UserResponse> apiResponse = new RestApiResponse<>();

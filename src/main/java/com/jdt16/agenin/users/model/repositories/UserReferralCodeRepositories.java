@@ -10,4 +10,8 @@ public interface UserReferralCodeRepositories extends JpaRepository<UserReferral
     boolean existsByUserReferralEntityDTOUserId(UUID userId);
 
     Optional<UserReferralCodeEntityDTO> findByUserReferralEntityDTOUserId(UUID userId);
+
+    boolean existsByUserReferralEntityDTOCodeIgnoreCase(String userReferralCode);
+
+    Optional<UserReferralCodeEntityDTO> findByUserReferralEntityDTOCodeIgnoreCase(String userReferralCode);
 }

@@ -26,18 +26,9 @@ public class UserResponse {
     @JsonProperty("userPhoneNumber")
     private String userEntityDTOPhoneNumber;
 
-    @JsonProperty("userIsAdmin")
-    private Boolean userEntityDTOIsAdmin;
-
-    @JsonProperty("userIsParent")
-    private Boolean userEntityDTOIsParent;
+    @JsonProperty("roleName")
+    private String userEntityDTORoleName;
 
     @JsonProperty("userCreatedDate")
     private LocalDateTime userEntityDTOCreatedDate;
-
-    @JsonProperty("userUpdatedDate")
-    private LocalDateTime userEntityDTOUpdatedDate;
-
-    @JsonProperty("userStatus")
-    private Boolean userEntityDTOStatus;
 }

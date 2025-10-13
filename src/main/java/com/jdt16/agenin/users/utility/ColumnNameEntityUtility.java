@@ -11,15 +11,32 @@ public class ColumnNameEntityUtility {
     public static final String COLUMN_USERS_PHONE_NUMBER = "user_phone_number";
     public static final String COLUMN_USERS_EMAIL = "user_email";
     public static final String COLUMN_USERS_PASSWORD = "user_password";
-    public static final String COLUMN_USERS_IS_ADMIN = "user_is_admin";
-    public static final String COLUMN_USERS_IS_PARENT = "user_is_parent";
+    public static final String COLUMN_USERS_ROLE_ID = "role_id";
+    public static final String COLUMN_USERS_ROLE_NAME = "role_name";
     public static final String COLUMN_USERS_CREATED_DATE = "user_created_date";
     public static final String COLUMN_USERS_UPDATED_DATE = "user_updated_date";
-    public static final String COLUMN_USERS_STATUS = "user_status";
 
-    /* USER_REFERRAL_CODE */
+    /* T_USER_REFERRAL_CODE */
     public static final String COLUMN_USER_REFERRAL_CODE_ID = "user_referral_code_id";
     public static final String COLUMN_ID_USER = "id_user";
     public static final String COLUMN_USER_REFERRAL_CODE = "user_referral_code";
     public static final String COLUMN_USER_REFERRAL_CODE_CREATED_AT = "user_referral_code_created_at";
+
+    /* M_ROLE */
+    public static final String COLUMN_ROLE_ID = "role_id";
+    public static final String COLUMN_ROLE_NAME = "role_name";
+    public static final String COLUMN_ROLE_CREATED_DATE = "role_created_date";
+    public static final String COLUMN_ROLE_UPDATED_DATE = "role_updated_date";
+
+    /* T_USERS_REFERRAL */
+    public static final String COLUMN_USERS_REFERRAL_ID = "users_referral_id";
+    public static final String COLUMN_INVITEE_USER_EMAIL = "invitee_user_email";
+    public static final String COLUMN_INVITEE_USER_PHONENUMBER = "invitee_user_phonenumber";
+    public static final String COLUMN_INVITEE_USER_FULLNAME = "invitee_user_fullname";
+    public static final String COLUMN_INVITEE_USER_ID = "invitee_user_id";
+    public static final String COLUMN_REFERENCE_USER_ID = "reference_user_id";
+    public static final String COLUMN_REFERENCE_USER_FULLNAME = "reference_user_fullname";
+    public static final String COLUMN_REFERENCE_USER_PHONENUMBER = "reference_user_phonenumber";
+    public static final String COLUMN_REFERENCE_USER_EMAIL = "reference_user_email";
+    public static final String COLUMN_REFERRAL_CODE = "referral_code";
 }

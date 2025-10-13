@@ -10,13 +10,13 @@ import lombok.Data;
 public class UserRequest {
 
     @NotBlank(message = "Nama tidak boleh kosong")
-    @Size(min = 5, max = 100, message="Minimal 5 karakter, maksimal 100")
+    @Size(min = 5, max = 100, message = "Minimal 5 karakter, maksimal 100")
     @JsonProperty("userFullName")
     private String userEntityDTOFullName;
 
     @Email(message = "Masukkan format email yang valid")
     @NotBlank(message = "Email tidak boleh kosong")
-    @Size(min = 5, max = 100, message="Minimal 5 karakter, maksimal 100")
+    @Size(min = 5, max = 100, message = "Minimal 5 karakter, maksimal 100")
     @JsonProperty("userEmail")
     private String userEntityDTOEmail;
 
@@ -28,4 +28,7 @@ public class UserRequest {
     @Size(min = 5, max = 100, message = "Minimal 5 dan maksimal 100 karakter")
     @JsonProperty("userPassword")
     private String userEntityDTOPassword;
+
+    @JsonProperty("userReferralCode")
+    private String userEntityDTOReferralCode;
 }
