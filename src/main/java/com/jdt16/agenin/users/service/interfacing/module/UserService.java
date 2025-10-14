@@ -16,6 +16,6 @@ public interface UserService {
 
     UserProfileResponse getUserProfile(UUID userId);
 
-    List<UserDownlineResponse> getUserDownline(UUID referenceUserId);
+    List<UsersDownlineResponse> getUserDownline(UUID referenceUserId);
 
 }

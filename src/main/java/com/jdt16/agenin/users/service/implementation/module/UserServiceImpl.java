@@ -216,20 +216,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDownlineResponse> getUserDownline(UUID referenceUserId) {
+    public List<UsersDownlineResponse> getUserDownline(UUID referenceUserId) {
         List<UsersReferralEntityDTO> usersDownline = usersReferralRepositories
                 .findAllByUsersReferralEntityDTOReferenceUserId(referenceUserId);
         if (usersDownline.isEmpty()) {
             throw new CoreThrowHandlerException("Downline tidak ditemukan untuk user dengan ID berikut: " + referenceUserId);
         }
         return usersDownline.stream().map(usersReferralEntityDTO -> {
-            UserDownlineResponse userDownlineResponse = new UserDownlineResponse();
-            userDownlineResponse.setUserEntityDTOId(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserId());
-            userDownlineResponse.setUserEntityDTOFullName(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserFullName());
-            userDownlineResponse.setUserEntityDTOPhoneNumber(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserPhoneNumber());
-            userDownlineResponse.setUserEntityDTOEmail(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserEmail());
-            userDownlineResponse.setUserEntityDTOCommissionValue(BigDecimal.valueOf(100000));
-            return userDownlineResponse;
+            UsersDownlineResponse usersDownlineResponse = new UsersDownlineResponse();
+            usersDownlineResponse.setUserEntityDTOId(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserId());
+            usersDownlineResponse.setUserEntityDTOFullName(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserFullName());
+            usersDownlineResponse.setUserEntityDTOPhoneNumber(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserPhoneNumber());
+            usersDownlineResponse.setUserEntityDTOEmail(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserEmail());
+            usersDownlineResponse.setUserEntityDTOCommissionValue(BigDecimal.valueOf(100000));
+            return usersDownlineResponse;
         }).collect(Collectors.toList());
     }
 

@@ -80,12 +80,12 @@ public class UserController {
     }
 
     @GetMapping(RestApiPathUtility.API_PATH_MODULE_DOWNLINE + RestApiPathUtility.API_PATH_BY_PARENT_ID)
-    public ResponseEntity<RestApiResponse<List<UserDownlineResponse>>> getUserDownline(
+    public ResponseEntity<RestApiResponse<List<UsersDownlineResponse>>> getUserDownline(
             @PathVariable("reference-user-id") UUID referenceUserId) {
 
-        List<UserDownlineResponse> userDownline = userService.getUserDownline(referenceUserId);
+        List<UsersDownlineResponse> userDownline = userService.getUserDownline(referenceUserId);
 
-        RestApiResponse<List<UserDownlineResponse>> userDownlineResponseRestApiResponse = RestApiResponse.<List<UserDownlineResponse>>builder()
+        RestApiResponse<List<UsersDownlineResponse>> userDownlineResponseRestApiResponse = RestApiResponse.<List<UsersDownlineResponse>>builder()
                 .restAPIResponseCode(HttpStatus.OK.value())
                 .restAPIResponseMessage("Get user downline success")
                 .restAPIResponseResults(userDownline)
