@@ -28,24 +28,26 @@ public class UserController {
     ) {
         UserResponse userResponse = userService.saveUser(userRequest);
 
-        RestApiResponse<UserResponse> apiResponse = new RestApiResponse<>();
-        apiResponse.setRestAPIResponseCode(HttpStatus.CREATED.value());
-        apiResponse.setRestAPIResponseMessage("User successfully registered");
-        apiResponse.setRestAPIResponseResults(userResponse);
+        RestApiResponse<UserResponse> userResponseRestApiResponse = RestApiResponse.<UserResponse>builder()
+                .restAPIResponseCode(HttpStatus.CREATED.value())
+                .restAPIResponseMessage("User successfully registered")
+                .restAPIResponseResults(userResponse)
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(userResponseRestApiResponse);
 
-        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 
     @PostMapping(RestApiPathUtility.API_PATH_MODULE_REFERRAL_CODE + RestApiPathUtility.API_PATH_BY_ID)
     public ResponseEntity<RestApiResponse<?>> generateReferralCode(@PathVariable UUID id) {
         UserReferralCodeResponse userReferralCodeResponse = userService.generateReferralCode(id);
 
-        RestApiResponse<UserReferralCodeResponse> apiResponse = new RestApiResponse<>();
-        apiResponse.setRestAPIResponseCode((HttpStatus.OK.value()));
-        apiResponse.setRestAPIResponseMessage("Referral code successful");
-        apiResponse.setRestAPIResponseResults(userReferralCodeResponse);
+        RestApiResponse<UserReferralCodeResponse> userReferralCodeResponseRestApiResponse = RestApiResponse.<UserReferralCodeResponse>builder()
+                .restAPIResponseCode(HttpStatus.OK.value())
+                .restAPIResponseMessage("Referral code successful")
+                .restAPIResponseResults(userReferralCodeResponse)
+                .build();
 
-        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+        return ResponseEntity.status(HttpStatus.OK).body(userReferralCodeResponseRestApiResponse);
     }
 
     @PostMapping(RestApiPathUtility.API_PATH_MODULE_LOGIN)
