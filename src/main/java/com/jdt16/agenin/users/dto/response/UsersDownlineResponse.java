@@ -13,18 +13,18 @@ import java.util.UUID;
 @Builder
 public class UsersDownlineResponse {
 
-    @JsonProperty("userId")
-    private UUID userEntityDTOId;
+    @JsonProperty("inviteeUserId")
+    private UUID usersReferralEntityDTOInviteeUserId;
 
-    @JsonProperty("userFullName")
-    private String userEntityDTOFullName;
+    @JsonProperty("inviteeUserFullName")
+    private String usersReferralEntityDTOInviteeUserFullName;
 
-    @JsonProperty("userPhoneNumber")
-    private String userEntityDTOPhoneNumber;
+    @JsonProperty("inviteeUserPhoneNumber")
+    private String usersReferralEntityDTOInviteeUserPhoneNumber;
 
-    @JsonProperty("userEmail")
-    private String userEntityDTOEmail;
+    @JsonProperty("inviteeUserEmail")
+    private String usersReferralEntityDTOInviteeUserEmail;
 
-    @JsonProperty("commissionValue")
-    private BigDecimal userEntityDTOCommissionValue;
+    @JsonProperty("inviteeCommissionValue")
+    private BigDecimal usersReferralEntityDTOInviteeCommissionValue;
 }

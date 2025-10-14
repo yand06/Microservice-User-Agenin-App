@@ -7,11 +7,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.Builder;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Setter
-@Getter
-@Builder
+//@AllArgsConstructor
+//@NoArgsConstructor
+//@Setter
+//@Getter
+//@Builder
 public class UserAdminCommissionSetupResponse {
 
 }

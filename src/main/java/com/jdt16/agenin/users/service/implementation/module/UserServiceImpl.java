@@ -224,11 +224,11 @@ public class UserServiceImpl implements UserService {
         }
         return usersDownline.stream().map(usersReferralEntityDTO -> {
             UsersDownlineResponse usersDownlineResponse = new UsersDownlineResponse();
-            usersDownlineResponse.setUserEntityDTOId(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserId());
-            usersDownlineResponse.setUserEntityDTOFullName(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserFullName());
-            usersDownlineResponse.setUserEntityDTOPhoneNumber(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserPhoneNumber());
-            usersDownlineResponse.setUserEntityDTOEmail(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserEmail());
-            usersDownlineResponse.setUserEntityDTOCommissionValue(BigDecimal.valueOf(100000));
+            usersDownlineResponse.setUsersReferralEntityDTOInviteeUserId(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserId());
+            usersDownlineResponse.setUsersReferralEntityDTOInviteeUserFullName(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserFullName());
+            usersDownlineResponse.setUsersReferralEntityDTOInviteeUserPhoneNumber(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserPhoneNumber());
+            usersDownlineResponse.setUsersReferralEntityDTOInviteeUserEmail(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserEmail());
+            usersDownlineResponse.setUsersReferralEntityDTOInviteeCommissionValue(BigDecimal.valueOf(100000));
             return usersDownlineResponse;
         }).collect(Collectors.toList());
     }
