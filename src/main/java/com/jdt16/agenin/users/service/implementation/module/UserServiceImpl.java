@@ -220,7 +220,7 @@ public class UserServiceImpl implements UserService {
         List<UsersReferralEntityDTO> usersDownline = usersReferralRepositories
                 .findAllByUsersReferralEntityDTOReferenceUserId(referenceUserId);
         if (usersDownline.isEmpty()) {
-            throw new CoreThrowHandlerException("Downline tidak ditemukan untuk user dengan ID berikut: " + referenceUserId);
+            throw new CoreThrowHandlerException("Downline tidak ditemukan");
         }
         return usersDownline.stream().map(usersReferralEntityDTO -> {
             UsersDownlineResponse usersDownlineResponse = new UsersDownlineResponse();

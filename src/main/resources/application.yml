@@ -1,6 +1,6 @@
 spring:
   application:
-    name: AGENIN
+    name: AGENIN_USERS
     version: 1.0.0
   banner:
     location: classpath:/banner-text.txt
