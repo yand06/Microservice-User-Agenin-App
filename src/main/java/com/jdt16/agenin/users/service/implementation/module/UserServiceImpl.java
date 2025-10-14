@@ -10,10 +10,7 @@ import com.jdt16.agenin.users.dto.entity.UsersReferralEntityDTO;
 import com.jdt16.agenin.users.dto.exception.CoreThrowHandlerException;
 import com.jdt16.agenin.users.dto.request.UserLoginRequest;
 import com.jdt16.agenin.users.dto.request.UserRequest;
-import com.jdt16.agenin.users.dto.response.UserLoginResponse;
-import com.jdt16.agenin.users.dto.response.UserProfileResponse;
-import com.jdt16.agenin.users.dto.response.UserReferralCodeResponse;
-import com.jdt16.agenin.users.dto.response.UserResponse;
+import com.jdt16.agenin.users.dto.response.*;
 import com.jdt16.agenin.users.model.repositories.MUserRepositories;
 import com.jdt16.agenin.users.model.repositories.MUserRoleRepositories;
 import com.jdt16.agenin.users.model.repositories.UserReferralCodeRepositories;
@@ -26,9 +23,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -215,6 +215,23 @@ public class UserServiceImpl implements UserService {
         return userProfileResponse;
     }
 
+    @Override
+    public List<UserDownlineResponse> getUserDownline(UUID referenceUserId) {
+        List<UsersReferralEntityDTO> usersDownline = usersReferralRepositories
+                .findAllByUsersReferralEntityDTOReferenceUserId(referenceUserId);
+        if (usersDownline.isEmpty()) {
+            throw new CoreThrowHandlerException("Downline tidak ditemukan untuk user dengan ID berikut: " + referenceUserId);
+        }
+        return usersDownline.stream().map(usersReferralEntityDTO -> {
+            UserDownlineResponse userDownlineResponse = new UserDownlineResponse();
+            userDownlineResponse.setUserEntityDTOId(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserId());
+            userDownlineResponse.setUserEntityDTOFullName(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserFullName());
+            userDownlineResponse.setUserEntityDTOPhoneNumber(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserPhoneNumber());
+            userDownlineResponse.setUserEntityDTOEmail(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserEmail());
+            userDownlineResponse.setUserEntityDTOCommissionValue(BigDecimal.valueOf(100000));
+            return userDownlineResponse;
+        }).collect(Collectors.toList());
+    }
 
     private boolean isEmailLike(String input) {
         return input != null && input.contains("@");

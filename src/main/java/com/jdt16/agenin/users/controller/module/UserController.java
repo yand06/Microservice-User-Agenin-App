@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -76,5 +77,20 @@ public class UserController {
         response.setRestAPIResponseResults(userProfile);
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping(RestApiPathUtility.API_PATH_MODULE_DOWNLINE + RestApiPathUtility.API_PATH_BY_PARENT_ID)
+    public ResponseEntity<RestApiResponse<List<UserDownlineResponse>>> getUserDownline(
+            @PathVariable("reference-user-id") UUID referenceUserId) {
+
+        List<UserDownlineResponse> userDownline = userService.getUserDownline(referenceUserId);
+
+        RestApiResponse<List<UserDownlineResponse>> userDownlineResponseRestApiResponse = RestApiResponse.<List<UserDownlineResponse>>builder()
+                .restAPIResponseCode(HttpStatus.OK.value())
+                .restAPIResponseMessage("Get user downline success")
+                .restAPIResponseResults(userDownline)
+                .build();
+
+        return ResponseEntity.ok(userDownlineResponseRestApiResponse);
     }
 }

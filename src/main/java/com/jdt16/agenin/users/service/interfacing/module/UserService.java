@@ -2,11 +2,9 @@ package com.jdt16.agenin.users.service.interfacing.module;
 
 import com.jdt16.agenin.users.dto.request.UserLoginRequest;
 import com.jdt16.agenin.users.dto.request.UserRequest;
-import com.jdt16.agenin.users.dto.response.UserLoginResponse;
-import com.jdt16.agenin.users.dto.response.UserProfileResponse;
-import com.jdt16.agenin.users.dto.response.UserReferralCodeResponse;
-import com.jdt16.agenin.users.dto.response.UserResponse;
+import com.jdt16.agenin.users.dto.response.*;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
@@ -17,5 +15,7 @@ public interface UserService {
     UserLoginResponse login(UserLoginRequest userLoginRequest);
 
     UserProfileResponse getUserProfile(UUID userId);
+
+    List<UserDownlineResponse> getUserDownline(UUID referenceUserId);
 
 }
