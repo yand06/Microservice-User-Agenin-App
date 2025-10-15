@@ -233,6 +233,18 @@ public class UserServiceImpl implements UserService {
         }).collect(Collectors.toList());
     }
 
+    @Override
+    public UserReferralCodeResponse getReferralCode(UUID userId) {
+        UserReferralCodeEntityDTO userReferralCodeEntityDTO = userReferralCodeRepositories
+                .findByUserReferralEntityDTOUserId(userId)
+                .orElseThrow(() -> new CoreThrowHandlerException("Referral code tidak ditemukan"));
+        return UserReferralCodeResponse.builder()
+                .userReferralEntityDTOId(userReferralCodeEntityDTO.getUserReferralEntityDTOId())
+                .userReferralEntityDTOCode(userReferralCodeEntityDTO.getUserReferralEntityDTOCode())
+                .userReferralEntityDTOCreatedAt(userReferralCodeEntityDTO.getUserReferralEntityDTOCreatedAt())
+                .build();
+    }
+
     private boolean isEmailLike(String input) {
         return input != null && input.contains("@");
     }
