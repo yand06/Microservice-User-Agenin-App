@@ -18,4 +18,5 @@ public interface UserService {
 
     List<UsersDownlineResponse> getUserDownline(UUID referenceUserId);
 
+    UserReferralCodeResponse getReferralCode(UUID userId);
 }
