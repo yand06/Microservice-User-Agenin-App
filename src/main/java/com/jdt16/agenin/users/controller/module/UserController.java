@@ -94,7 +94,7 @@ public class UserController {
         return ResponseEntity.ok(userDownlineResponseRestApiResponse);
     }
 
-    @GetMapping(RestApiPathUtility.API_PATH_MODULE_REFERRAL_CODE + RestApiPathUtility.API_PATH_BY_ID)
+    @GetMapping(RestApiPathUtility.API_PATH_MODULE_REFERRAL_CODE)
     public ResponseEntity<RestApiResponse<UserReferralCodeResponse>> getReferralCode(
             @RequestHeader("X-USER-ID") UUID userId) {
         UserReferralCodeResponse userReferralCodeResponse = userService.getReferralCode(userId);
