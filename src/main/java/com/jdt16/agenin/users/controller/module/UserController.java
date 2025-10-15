@@ -38,8 +38,8 @@ public class UserController {
 
     }
 
-    @PostMapping(RestApiPathUtility.API_PATH_MODULE_REFERRAL_CODE + RestApiPathUtility.API_PATH_BY_ID)
-    public ResponseEntity<RestApiResponse<?>> generateReferralCode(@PathVariable UUID id) {
+    @PostMapping(RestApiPathUtility.API_PATH_MODULE_REFERRAL_CODE)
+    public ResponseEntity<RestApiResponse<?>> generateReferralCode(@RequestHeader("X-User-ID") UUID id) {
         UserReferralCodeResponse userReferralCodeResponse = userService.generateReferralCode(id);
 
         RestApiResponse<UserReferralCodeResponse> userReferralCodeResponseRestApiResponse = RestApiResponse.<UserReferralCodeResponse>builder()
@@ -65,9 +65,9 @@ public class UserController {
         return ResponseEntity.ok(apiResponse);
     }
 
-    @GetMapping(RestApiPathUtility.API_PATH_MODULE_PROFILE + RestApiPathUtility.API_PATH_BY_ID)
+    @GetMapping(RestApiPathUtility.API_PATH_MODULE_PROFILE)
     public ResponseEntity<RestApiResponse<UserProfileResponse>> getUserProfile(
-            @PathVariable UUID id) {
+            @RequestHeader("X-User-ID") UUID id) {
 
         UserProfileResponse userProfile = userService.getUserProfile(id);
 
