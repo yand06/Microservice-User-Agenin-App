@@ -101,7 +101,7 @@ public class UserController {
 
         RestApiResponse<UserReferralCodeResponse> userReferralCodeResponseRestApiResponse = RestApiResponse.<UserReferralCodeResponse>builder()
                 .restAPIResponseCode(HttpStatus.OK.value())
-                .restAPIResponseMessage("Get referral code success")
+                .restAPIResponseMessage("Dapatkan kode referensi dengan sukses")
                 .restAPIResponseResults(userReferralCodeResponse)
                 .build();
 

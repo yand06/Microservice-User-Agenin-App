@@ -50,11 +50,11 @@ public class UserServiceImpl implements UserService {
     public UserResponse saveUser(UserRequest userRequest) {
         userRepositories.findByUserEntityDTOEmailIgnoreCase(userRequest.getUserEntityDTOEmail())
                 .ifPresent(u -> {
-                    throw new CoreThrowHandlerException("Pengguna sudah ada dengan alamat email: " + userRequest.getUserEntityDTOEmail());
+                    throw new CoreThrowHandlerException("The user already exists with the email address: " + userRequest.getUserEntityDTOEmail());
                 });
         userRepositories.findByUserEntityDTOPhoneNumber(userRequest.getUserEntityDTOPhoneNumber())
                 .ifPresent(u -> {
-                    throw new CoreThrowHandlerException("Pengguna sudah ada dengan nomor telepon: " + userRequest.getUserEntityDTOPhoneNumber());
+                    throw new CoreThrowHandlerException("Users already exist with phone numbers: " + userRequest.getUserEntityDTOPhoneNumber());
                 });
 
         referralCodeValidation(userRequest);
@@ -86,21 +86,21 @@ public class UserServiceImpl implements UserService {
 
     private UserRoleEntityDTO findRoleForRegistration(@Nullable String referralCode) {
         final boolean hasReferral = referralCode != null && !referralCode.isBlank();
-        final String roleName = hasReferral ? "AGEN BAWAHAN" : "AGEN TUNGGAL";
+        final String roleName = hasReferral ? "SUB-AGENT" : "AGENT";
         return userRoleRepositories.findByUserRoleEntityDTONameIgnoreCase(roleName)
                 .orElseThrow(() -> new CoreThrowHandlerException(
-                        "Role '%s' belum disiapkan, mohon seed data M_ROLE terlebih dahulu".formatted(roleName)));
+                        "Role '%s' Not yet prepared, please seed the M_ROLE data first.".formatted(roleName)));
     }
 
     private void referralCodeValidation(UserRequest userRequest) {
         String referralCode = trimToNull(userRequest.getUserEntityDTOReferralCode());
         if (referralCode != null) {
             if (!userReferralCodeRepositories.existsByUserReferralEntityDTOCodeIgnoreCase(referralCode)) {
-                throw new CoreThrowHandlerException("Kode referal tidak ditemukan");
+                throw new CoreThrowHandlerException("Referral Code not found");
             }
             userReferralCodeEntityDTO = userReferralCodeRepositories
                     .findByUserReferralEntityDTOCodeIgnoreCase(referralCode)
-                    .orElseThrow(() -> new CoreThrowHandlerException("Kode referal tidak ditemukan"));
+                    .orElseThrow(() -> new CoreThrowHandlerException("Referral Code not found"));
         } else {
             userReferralCodeEntityDTO = null;
         }
@@ -112,7 +112,7 @@ public class UserServiceImpl implements UserService {
             return;
         }
         UserEntityDTO referenceUser = userRepositories.findById(userReferralCodeEntityDTO.getUserReferralEntityDTOUserId())
-                .orElseThrow(() -> new CoreThrowHandlerException("Pemilik kode referal tidak ditemukan"));
+                .orElseThrow(() -> new CoreThrowHandlerException("Referral code owner not found"));
 
         UsersReferralEntityDTO usersReferralEntityDTO = new UsersReferralEntityDTO();
         usersReferralEntityDTO.setUsersReferralEntityDTOId(UUID.randomUUID());
@@ -142,7 +142,7 @@ public class UserServiceImpl implements UserService {
         }
 
         if (userReferralCodeRepositories.existsByUserReferralEntityDTOUserId(userId)) {
-            throw new IllegalStateException("Pengguna sudah memiliki kode referensi.");
+            throw new IllegalStateException("The user already has a referral code..");
         }
 
         UserReferralCodeEntityDTO referralCodeEntityDTO = new UserReferralCodeEntityDTO();
@@ -174,7 +174,7 @@ public class UserServiceImpl implements UserService {
                 : userRepositories.findByUserEntityDTOPhoneNumber(identifier);
 
         if (userOpt.isEmpty()) {
-            throw new IllegalStateException("Email atau nomor telepon tidak ditemukan");
+            throw new IllegalStateException("Email or phone number not found");
         }
 
         UserEntityDTO user = userOpt.get();
@@ -220,7 +220,7 @@ public class UserServiceImpl implements UserService {
         List<UsersReferralEntityDTO> usersDownline = usersReferralRepositories
                 .findAllByUsersReferralEntityDTOReferenceUserId(referenceUserId);
         if (usersDownline.isEmpty()) {
-            throw new CoreThrowHandlerException("Downline tidak ditemukan");
+            throw new CoreThrowHandlerException("Downline not found");
         }
         return usersDownline.stream().map(usersReferralEntityDTO -> {
             UsersDownlineResponse usersDownlineResponse = new UsersDownlineResponse();
@@ -237,7 +237,7 @@ public class UserServiceImpl implements UserService {
     public UserReferralCodeResponse getReferralCode(UUID userId) {
         UserReferralCodeEntityDTO userReferralCodeEntityDTO = userReferralCodeRepositories
                 .findByUserReferralEntityDTOUserId(userId)
-                .orElseThrow(() -> new CoreThrowHandlerException("Referral code tidak ditemukan"));
+                .orElseThrow(() -> new CoreThrowHandlerException("Referral code note found"));
         return UserReferralCodeResponse.builder()
                 .userReferralEntityDTOId(userReferralCodeEntityDTO.getUserReferralEntityDTOId())
                 .userReferralEntityDTOCode(userReferralCodeEntityDTO.getUserReferralEntityDTOCode())
