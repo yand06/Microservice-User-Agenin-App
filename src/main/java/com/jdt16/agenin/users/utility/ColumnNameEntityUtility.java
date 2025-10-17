@@ -42,6 +42,7 @@ public class ColumnNameEntityUtility {
 
     /* M_USERS_BALANCE */
     public static final String COLUMN_USERS_BALANCE_ID = "user_balance_id";
+    public static final String COLUMN_USERS_BALANCE_USER_ID = "id_user";
     public static final String COLUMN_USER_BALANCE_AMOUNT = "user_balance_amount";
     public static final String COLUMN_USER_BALANCE_LAST_UPDATE = "user_balance_last_update";
 }

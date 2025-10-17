@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface UserReferralCodeRepositories extends JpaRepository<UserReferralCodeEntityDTO, UUID> {
+public interface TUserReferralCodeRepositories extends JpaRepository<UserReferralCodeEntityDTO, UUID> {
     boolean existsByUserReferralEntityDTOUserId(UUID userId);
 
     Optional<UserReferralCodeEntityDTO> findByUserReferralEntityDTOUserId(UUID userId);

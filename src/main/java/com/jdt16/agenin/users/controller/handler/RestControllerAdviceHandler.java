@@ -187,6 +187,7 @@ public class RestControllerAdviceHandler {
     public ResponseEntity<RestApiResponse<Void>> handleAnyThrowable(Throwable ex) {
         Map<String, Serializable> errorDetails = new HashMap<>();
         errorDetails.put("tipe", "KESALAHAN_TIDAK_TERDUGA");
+        log.info("INFORMATION: {}", ex.getMessage());
 
         RestApiResponseError error = RestApiResponseError.builder()
                 .restAPIResponseRequestError(errorDetails)

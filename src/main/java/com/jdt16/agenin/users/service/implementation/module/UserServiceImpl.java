@@ -11,10 +11,7 @@ import com.jdt16.agenin.users.dto.exception.CoreThrowHandlerException;
 import com.jdt16.agenin.users.dto.request.UserLoginRequest;
 import com.jdt16.agenin.users.dto.request.UserRequest;
 import com.jdt16.agenin.users.dto.response.*;
-import com.jdt16.agenin.users.model.repositories.MUserRepositories;
-import com.jdt16.agenin.users.model.repositories.MUserRoleRepositories;
-import com.jdt16.agenin.users.model.repositories.UserReferralCodeRepositories;
-import com.jdt16.agenin.users.model.repositories.UsersReferralRepositories;
+import com.jdt16.agenin.users.model.repositories.*;
 import com.jdt16.agenin.users.service.interfacing.module.UserService;
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
@@ -36,9 +33,10 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final MUserRepositories userRepositories;
-    private final UserReferralCodeRepositories userReferralCodeRepositories;
+    private final TUserReferralCodeRepositories TUserReferralCodeRepositories;
     private final MUserRoleRepositories userRoleRepositories;
-    private final UsersReferralRepositories usersReferralRepositories;
+    private final TUsersReferralRepositories TUsersReferralRepositories;
+    private final MUserBalanceRepositories userBalanceRepositories;
     private final SecurityConfig securityConfig = new SecurityConfig();
     private final ReferralCodeGenerator referralCodeGenerator = new ReferralCodeGenerator();
     private final UserAuthJWT userAuthJWT;
@@ -95,10 +93,10 @@ public class UserServiceImpl implements UserService {
     private void referralCodeValidation(UserRequest userRequest) {
         String referralCode = trimToNull(userRequest.getUserEntityDTOReferralCode());
         if (referralCode != null) {
-            if (!userReferralCodeRepositories.existsByUserReferralEntityDTOCodeIgnoreCase(referralCode)) {
+            if (!TUserReferralCodeRepositories.existsByUserReferralEntityDTOCodeIgnoreCase(referralCode)) {
                 throw new CoreThrowHandlerException("Referral Code not found");
             }
-            userReferralCodeEntityDTO = userReferralCodeRepositories
+            userReferralCodeEntityDTO = TUserReferralCodeRepositories
                     .findByUserReferralEntityDTOCodeIgnoreCase(referralCode)
                     .orElseThrow(() -> new CoreThrowHandlerException("Referral Code not found"));
         } else {
@@ -125,7 +123,7 @@ public class UserServiceImpl implements UserService {
         usersReferralEntityDTO.setUsersReferralEntityDTOReferenceUserPhoneNumber(referenceUser.getUserEntityDTOPhoneNumber());
         usersReferralEntityDTO.setUsersReferralEntityDTOReferenceUserEmail(referenceUser.getUserEntityDTOEmail());
         usersReferralEntityDTO.setUsersReferralEntityDTOReferralCode(userReferralCodeEntityDTO.getUserReferralEntityDTOCode());
-        usersReferralRepositories.save(usersReferralEntityDTO);
+        TUsersReferralRepositories.save(usersReferralEntityDTO);
     }
 
     private static String trimToNull(String s) {
@@ -141,7 +139,7 @@ public class UserServiceImpl implements UserService {
             throw new ResourceNotFoundException("User not found with id: " + userId);
         }
 
-        if (userReferralCodeRepositories.existsByUserReferralEntityDTOUserId(userId)) {
+        if (TUserReferralCodeRepositories.existsByUserReferralEntityDTOUserId(userId)) {
             throw new IllegalStateException("The user already has a referral code..");
         }
 
@@ -156,7 +154,7 @@ public class UserServiceImpl implements UserService {
         }
         referralCodeEntityDTO.setUserReferralEntityDTOCode(code);
 
-        userReferralCodeRepositories.save(referralCodeEntityDTO);
+        TUserReferralCodeRepositories.save(referralCodeEntityDTO);
 
         return UserReferralCodeResponse.builder()
                 .userReferralEntityDTOCode(code)
@@ -217,7 +215,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UsersDownlineResponse> getUserDownline(UUID referenceUserId) {
-        List<UsersReferralEntityDTO> usersDownline = usersReferralRepositories
+        List<UsersReferralEntityDTO> usersDownline = TUsersReferralRepositories
                 .findAllByUsersReferralEntityDTOReferenceUserId(referenceUserId);
         if (usersDownline.isEmpty()) {
             throw new CoreThrowHandlerException("Downline not found");
@@ -228,14 +226,17 @@ public class UserServiceImpl implements UserService {
             usersDownlineResponse.setUsersReferralEntityDTOInviteeUserFullName(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserFullName());
             usersDownlineResponse.setUsersReferralEntityDTOInviteeUserPhoneNumber(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserPhoneNumber());
             usersDownlineResponse.setUsersReferralEntityDTOInviteeUserEmail(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserEmail());
-            usersDownlineResponse.setUsersReferralEntityDTOInviteeCommissionValue(BigDecimal.valueOf(100000));
+            BigDecimal commissionValue = userBalanceRepositories
+                    .findBalanceAmountByUserId(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserId())
+                    .orElse(BigDecimal.ZERO); // default 0
+            usersDownlineResponse.setUsersReferralEntityDTOInviteeCommissionValue(commissionValue);
             return usersDownlineResponse;
         }).collect(Collectors.toList());
     }
 
     @Override
     public UserReferralCodeResponse getReferralCode(UUID userId) {
-        UserReferralCodeEntityDTO userReferralCodeEntityDTO = userReferralCodeRepositories
+        UserReferralCodeEntityDTO userReferralCodeEntityDTO = TUserReferralCodeRepositories
                 .findByUserReferralEntityDTOUserId(userId)
                 .orElseThrow(() -> new CoreThrowHandlerException("Referral code note found"));
         return UserReferralCodeResponse.builder()

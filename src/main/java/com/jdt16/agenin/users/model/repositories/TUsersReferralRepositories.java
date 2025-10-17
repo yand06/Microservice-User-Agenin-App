@@ -8,6 +8,6 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface UsersReferralRepositories extends JpaRepository<UsersReferralEntityDTO, UUID> {
-  List<UsersReferralEntityDTO> findAllByUsersReferralEntityDTOReferenceUserId(UUID referenceUserId);
+public interface TUsersReferralRepositories extends JpaRepository<UsersReferralEntityDTO, UUID> {
+    List<UsersReferralEntityDTO> findAllByUsersReferralEntityDTOReferenceUserId(UUID referenceUserId);
 }

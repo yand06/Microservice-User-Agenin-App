@@ -22,14 +22,14 @@ import java.util.UUID;
 public class UserBalanceEntityDTO {
     @Id
     @Column(name = ColumnNameEntityUtility.COLUMN_USERS_BALANCE_ID, nullable = false, updatable = false)
-    private String userEntityDTOUserBalanceId;
+    private String userBalanceEntityDTOId;
 
-    @Column(name = ColumnNameEntityUtility.COLUMN_USERS_ID, nullable = false, updatable = false)
-    private UUID userEntityDTOId;
+    @Column(name = ColumnNameEntityUtility.COLUMN_USERS_BALANCE_USER_ID, nullable = false, updatable = false)
+    private UUID userBalanceEntityDTOUserId;
 
     @Column(name = ColumnNameEntityUtility.COLUMN_USER_BALANCE_AMOUNT, nullable = false)
-    private String userEntityDTOBalanceAmount;
+    private String userBalanceEntityDTOAmount;
 
     @Column(name = ColumnNameEntityUtility.COLUMN_USER_BALANCE_LAST_UPDATE, nullable = false)
-    private String userEntityDTOBalanceLastUpdate;
+    private String userBalanceEntityDTOLastUpdate;
 }
