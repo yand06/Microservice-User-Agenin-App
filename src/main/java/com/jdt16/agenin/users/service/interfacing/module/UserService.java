@@ -4,19 +4,18 @@ import com.jdt16.agenin.users.dto.request.UserLoginRequest;
 import com.jdt16.agenin.users.dto.request.UserRequest;
 import com.jdt16.agenin.users.dto.response.*;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
-    UserResponse saveUser(UserRequest userRequest);
+    RestApiResponse<Object> saveUser(UserRequest userRequest);
 
-    UserReferralCodeResponse generateReferralCode(UUID userID);
+    RestApiResponse<Object> generateReferralCode(UUID userID);
 
-    UserLoginResponse login(UserLoginRequest userLoginRequest);
+    RestApiResponse<Object> login(UserLoginRequest userLoginRequest);
 
-    UserProfileResponse getUserProfile(UUID userId);
+    RestApiResponse<Object> getUserProfile(UUID userId);
 
-    List<UsersDownlineResponse> getUserDownline(UUID referenceUserId);
+    RestApiResponse<Object> getUserDownline(UUID referenceUserId);
 
-    UserReferralCodeResponse getReferralCode(UUID userId);
+    RestApiResponse<Object> getReferralCode(UUID userId);
 }

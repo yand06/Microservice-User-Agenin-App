@@ -24,87 +24,32 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping(RestApiPathUtility.API_PATH_CREATE)
-    public ResponseEntity<RestApiResponse<?>> createUser(
-            @Valid @RequestBody UserRequest userRequest
-    ) {
-        UserResponse userResponse = userService.saveUser(userRequest);
-
-        RestApiResponse<UserResponse> userResponseRestApiResponse = RestApiResponse.<UserResponse>builder()
-                .restAPIResponseCode(HttpStatus.CREATED.value())
-                .restAPIResponseMessage("User successfully registered")
-                .restAPIResponseResults(userResponse)
-                .build();
-        return ResponseEntity.status(HttpStatus.OK).body(userResponseRestApiResponse);
-
+    public ResponseEntity<RestApiResponse<?>> createUser(@Valid @RequestBody UserRequest userRequest) {
+        return ResponseEntity.ok(userService.saveUser(userRequest));
     }
 
     @PostMapping(RestApiPathUtility.API_PATH_MODULE_REFERRAL_CODE)
-    public ResponseEntity<RestApiResponse<?>> generateReferralCode(@RequestHeader("X-USER-ID") UUID id) {
-        UserReferralCodeResponse userReferralCodeResponse = userService.generateReferralCode(id);
-
-        RestApiResponse<UserReferralCodeResponse> userReferralCodeResponseRestApiResponse = RestApiResponse.<UserReferralCodeResponse>builder()
-                .restAPIResponseCode(HttpStatus.OK.value())
-                .restAPIResponseMessage("Referral code successful")
-                .restAPIResponseResults(userReferralCodeResponse)
-                .build();
-
-        return ResponseEntity.status(HttpStatus.OK).body(userReferralCodeResponseRestApiResponse);
+    public ResponseEntity<RestApiResponse<?>> generateReferralCode(@RequestHeader("X-USER-ID") UUID userId) {
+        return ResponseEntity.ok(userService.generateReferralCode(userId));
     }
 
     @PostMapping(RestApiPathUtility.API_PATH_MODULE_LOGIN)
-    public ResponseEntity<RestApiResponse<UserLoginResponse>> login(
-            @Valid @RequestBody UserLoginRequest userLoginRequest
-    ) {
-        UserLoginResponse userLoginResponse = userService.login(userLoginRequest);
-
-        RestApiResponse<UserLoginResponse> apiResponse = new RestApiResponse<>();
-        apiResponse.setRestAPIResponseCode(HttpStatus.OK.value());
-        apiResponse.setRestAPIResponseMessage("User login successful");
-        apiResponse.setRestAPIResponseResults(userLoginResponse);
-
-        return ResponseEntity.ok(apiResponse);
+    public ResponseEntity<RestApiResponse<?>> login(@Valid @RequestBody UserLoginRequest userLoginRequest) {
+        return ResponseEntity.ok(userService.login(userLoginRequest));
     }
 
     @GetMapping(RestApiPathUtility.API_PATH_MODULE_PROFILE)
-    public ResponseEntity<RestApiResponse<UserProfileResponse>> getUserProfile(
-            @RequestHeader("X-USER-ID") UUID id) {
-
-        UserProfileResponse userProfile = userService.getUserProfile(id);
-
-        RestApiResponse<UserProfileResponse> response = new RestApiResponse<>();
-        response.setRestAPIResponseCode(200);
-        response.setRestAPIResponseMessage("Get user profile success");
-        response.setRestAPIResponseResults(userProfile);
-
-        return ResponseEntity.ok(response);
+    public ResponseEntity<RestApiResponse<?>> getUserProfile(@RequestHeader("X-USER-ID") UUID userId) {
+        return ResponseEntity.ok(userService.getUserProfile(userId));
     }
 
     @GetMapping(RestApiPathUtility.API_PATH_MODULE_DOWNLINE)
-    public ResponseEntity<RestApiResponse<List<UsersDownlineResponse>>> getUserDownline(
-            @RequestHeader("X-REFERENCE-USER-ID") UUID referenceUserId) {
-
-        List<UsersDownlineResponse> userDownline = userService.getUserDownline(referenceUserId);
-
-        RestApiResponse<List<UsersDownlineResponse>> userDownlineResponseRestApiResponse = RestApiResponse.<List<UsersDownlineResponse>>builder()
-                .restAPIResponseCode(HttpStatus.OK.value())
-                .restAPIResponseMessage("Get user downline success")
-                .restAPIResponseResults(userDownline)
-                .build();
-
-        return ResponseEntity.ok(userDownlineResponseRestApiResponse);
+    public ResponseEntity<RestApiResponse<?>> getUserDownline(@RequestHeader("X-REFERENCE-USER-ID") UUID referenceUserId) {
+        return ResponseEntity.ok(userService.getUserDownline(referenceUserId));
     }
 
     @GetMapping(RestApiPathUtility.API_PATH_MODULE_REFERRAL_CODE)
-    public ResponseEntity<RestApiResponse<UserReferralCodeResponse>> getReferralCode(
-            @RequestHeader("X-USER-ID") UUID userId) {
-        UserReferralCodeResponse userReferralCodeResponse = userService.getReferralCode(userId);
-
-        RestApiResponse<UserReferralCodeResponse> userReferralCodeResponseRestApiResponse = RestApiResponse.<UserReferralCodeResponse>builder()
-                .restAPIResponseCode(HttpStatus.OK.value())
-                .restAPIResponseMessage("Successfully obtain the Referral Code")
-                .restAPIResponseResults(userReferralCodeResponse)
-                .build();
-
-        return ResponseEntity.ok(userReferralCodeResponseRestApiResponse);
+    public ResponseEntity<RestApiResponse<?>> getReferralCode(@RequestHeader("X-USER-ID") UUID userId) {
+        return ResponseEntity.ok(userService.getReferralCode(userId));
     }
 }

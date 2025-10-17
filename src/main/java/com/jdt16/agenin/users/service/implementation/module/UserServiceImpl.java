@@ -18,13 +18,12 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.errors.ResourceNotFoundException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -40,12 +39,12 @@ public class UserServiceImpl implements UserService {
     private final SecurityConfig securityConfig = new SecurityConfig();
     private final ReferralCodeGenerator referralCodeGenerator = new ReferralCodeGenerator();
     private final UserAuthJWT userAuthJWT;
-    private final UserEntityDTO userEntityDTO = new UserEntityDTO();
+    private UserEntityDTO userEntityDTO = new UserEntityDTO();
     private UserReferralCodeEntityDTO userReferralCodeEntityDTO = new UserReferralCodeEntityDTO();
 
     @Override
     @Transactional
-    public UserResponse saveUser(UserRequest userRequest) {
+    public RestApiResponse<Object> saveUser(UserRequest userRequest) {
         userRepositories.findByUserEntityDTOEmailIgnoreCase(userRequest.getUserEntityDTOEmail())
                 .ifPresent(userEntityDTO -> {
                     throw new CoreThrowHandlerException("The user already exists with the email address: " + userRequest.getUserEntityDTOEmail());
@@ -57,27 +56,30 @@ public class UserServiceImpl implements UserService {
         referralCodeValidation(userRequest);
         UserRoleEntityDTO userRoleEntityDTO = findRoleForRegistration(userRequest.getUserEntityDTOReferralCode());
 
-        UserEntityDTO newUser = new UserEntityDTO();
-        newUser.setUserEntityDTOId(UUID.randomUUID());
-        newUser.setUserEntityDTOFullName(userRequest.getUserEntityDTOFullName());
-        newUser.setUserEntityDTOEmail(userRequest.getUserEntityDTOEmail());
-        newUser.setUserEntityDTOPhoneNumber(userRequest.getUserEntityDTOPhoneNumber());
-        newUser.setUserEntityDTOPassword(securityConfig.passwordEncoder().encode(userRequest.getUserEntityDTOPassword()));
-        newUser.setUserEntityDTORoleId(userRoleEntityDTO.getUserRoleEntityDTOId());
-        newUser.setUserEntityDTORoleName(userRoleEntityDTO.getUserRoleEntityDTOName());
-        newUser.setUserEntityDTOCreatedDate(LocalDateTime.now());
-        newUser.setUserEntityDTOUpdatedDate(LocalDateTime.now());
+        UserEntityDTO newUserEntityDTO = UserEntityDTO.builder()
+                .userEntityDTOId(UUID.randomUUID())
+                .userEntityDTOFullName(userRequest.getUserEntityDTOFullName())
+                .userEntityDTOEmail(userRequest.getUserEntityDTOEmail())
+                .userEntityDTOPhoneNumber(userRequest.getUserEntityDTOPhoneNumber())
+                .userEntityDTOPassword(securityConfig.passwordEncoder().encode(userRequest.getUserEntityDTOPassword()))
+                .userEntityDTORoleId(userRoleEntityDTO.getUserRoleEntityDTOId())
+                .userEntityDTORoleName(userRoleEntityDTO.getUserRoleEntityDTOName())
+                .userEntityDTOCreatedDate(LocalDateTime.now())
+                .userEntityDTOUpdatedDate(LocalDateTime.now())
+                .build();
+        userRepositories.save(newUserEntityDTO);
 
-        userRepositories.save(newUser);
-
-        userEntityDTO.setUserEntityDTOId(newUser.getUserEntityDTOId());
-        userEntityDTO.setUserEntityDTOFullName(newUser.getUserEntityDTOFullName());
-        userEntityDTO.setUserEntityDTOEmail(newUser.getUserEntityDTOEmail());
-        userEntityDTO.setUserEntityDTOPhoneNumber(newUser.getUserEntityDTOPhoneNumber());
-
+        userEntityDTO = UserEntityDTO.builder()
+                .userEntityDTOId(newUserEntityDTO.getUserEntityDTOId())
+                .userEntityDTOFullName(newUserEntityDTO.getUserEntityDTOFullName())
+                .userEntityDTOEmail(newUserEntityDTO.getUserEntityDTOEmail())
+                .userEntityDTOPhoneNumber(newUserEntityDTO.getUserEntityDTOPhoneNumber()).build();
         saveUsersReferral();
-
-        return getUserResponse(newUser);
+        return RestApiResponse.builder()
+                .restAPIResponseCode(HttpStatus.OK.value())
+                .restAPIResponseMessage("User successfully registered")
+                .restAPIResponseResults(getUserResponse(newUserEntityDTO))
+                .build();
     }
 
     private UserRoleEntityDTO findRoleForRegistration(@Nullable String referralCode) {
@@ -108,18 +110,18 @@ public class UserServiceImpl implements UserService {
         }
         UserEntityDTO referenceUser = userRepositories.findById(userReferralCodeEntityDTO.getUserReferralEntityDTOUserId())
                 .orElseThrow(() -> new CoreThrowHandlerException("Referral code owner not found"));
-
-        UsersReferralEntityDTO usersReferralEntityDTO = new UsersReferralEntityDTO();
-        usersReferralEntityDTO.setUsersReferralEntityDTOId(UUID.randomUUID());
-        usersReferralEntityDTO.setUsersReferralEntityDTOInviteeUserId(userEntityDTO.getUserEntityDTOId());
-        usersReferralEntityDTO.setUsersReferralEntityDTOInviteeUserFullName(userEntityDTO.getUserEntityDTOFullName());
-        usersReferralEntityDTO.setUsersReferralEntityDTOInviteeUserPhoneNumber(userEntityDTO.getUserEntityDTOPhoneNumber());
-        usersReferralEntityDTO.setUsersReferralEntityDTOInviteeUserEmail(userEntityDTO.getUserEntityDTOEmail());
-        usersReferralEntityDTO.setUsersReferralEntityDTOReferenceUserId(referenceUser.getUserEntityDTOId());
-        usersReferralEntityDTO.setUsersReferralEntityDTOReferenceUserFullName(referenceUser.getUserEntityDTOFullName());
-        usersReferralEntityDTO.setUsersReferralEntityDTOReferenceUserPhoneNumber(referenceUser.getUserEntityDTOPhoneNumber());
-        usersReferralEntityDTO.setUsersReferralEntityDTOReferenceUserEmail(referenceUser.getUserEntityDTOEmail());
-        usersReferralEntityDTO.setUsersReferralEntityDTOReferralCode(userReferralCodeEntityDTO.getUserReferralEntityDTOCode());
+        UsersReferralEntityDTO usersReferralEntityDTO = UsersReferralEntityDTO.builder()
+                .usersReferralEntityDTOId(UUID.randomUUID())
+                .usersReferralEntityDTOInviteeUserId(userEntityDTO.getUserEntityDTOId())
+                .usersReferralEntityDTOInviteeUserFullName(userEntityDTO.getUserEntityDTOFullName())
+                .usersReferralEntityDTOInviteeUserPhoneNumber(userEntityDTO.getUserEntityDTOPhoneNumber())
+                .usersReferralEntityDTOInviteeUserEmail(userEntityDTO.getUserEntityDTOEmail())
+                .usersReferralEntityDTOReferenceUserId(referenceUser.getUserEntityDTOId())
+                .usersReferralEntityDTOReferenceUserFullName(referenceUser.getUserEntityDTOFullName())
+                .usersReferralEntityDTOReferenceUserPhoneNumber(referenceUser.getUserEntityDTOPhoneNumber())
+                .usersReferralEntityDTOReferenceUserEmail(referenceUser.getUserEntityDTOEmail())
+                .usersReferralEntityDTOReferralCode(userReferralCodeEntityDTO.getUserReferralEntityDTOCode())
+                .build();
         tUsersReferralRepositories.save(usersReferralEntityDTO);
     }
 
@@ -130,116 +132,131 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserReferralCodeResponse generateReferralCode(UUID userId) {
-
+    public RestApiResponse<Object> generateReferralCode(UUID userId) {
         if (!userRepositories.existsById(userId)) {
             throw new ResourceNotFoundException("User not found with id: " + userId);
         }
-
         if (tUserReferralCodeRepositories.existsByUserReferralEntityDTOUserId(userId)) {
             throw new IllegalStateException("The user already has a referral code..");
         }
-
-        UserReferralCodeEntityDTO referralCodeEntityDTO = new UserReferralCodeEntityDTO();
-        referralCodeEntityDTO.setUserReferralEntityDTOId(UUID.randomUUID());
-        referralCodeEntityDTO.setUserReferralEntityDTOUserId(userId);
-        referralCodeEntityDTO.setUserReferralEntityDTOCreatedAt(LocalDateTime.now());
-
-        String code = referralCodeGenerator.generateReferralCode();
-        if (code == null || code.isEmpty()) {
-            throw new IllegalStateException("Referral code generation failed");
+        String referralCode = referralCodeGenerator.generateReferralCode();
+        if (referralCode == null || referralCode.isEmpty()) {
+            throw new IllegalStateException("Referral referralCode generation failed");
         }
-        referralCodeEntityDTO.setUserReferralEntityDTOCode(code);
-
-        tUserReferralCodeRepositories.save(referralCodeEntityDTO);
-
-        return UserReferralCodeResponse.builder()
-                .userReferralEntityDTOCode(code)
+        UserReferralCodeEntityDTO referralCodeEntityDTO = UserReferralCodeEntityDTO.builder()
+                .userReferralEntityDTOId(UUID.randomUUID())
+                .userReferralEntityDTOUserId(userId)
+                .userReferralEntityDTOCode(referralCode)
                 .userReferralEntityDTOCreatedAt(LocalDateTime.now())
+                .build();
+        tUserReferralCodeRepositories.save(referralCodeEntityDTO);
+        UserReferralCodeResponse referralCodeResponse = UserReferralCodeResponse.builder()
+                .userReferralEntityDTOCode(referralCode)
+                .userReferralEntityDTOCreatedAt(LocalDateTime.now())
+                .build();
+        return RestApiResponse.builder()
+                .restAPIResponseCode(HttpStatus.OK.value())
+                .restAPIResponseMessage("Referral referralCode generated successfully")
+                .restAPIResponseResults(referralCodeResponse)
                 .build();
     }
 
     @Override
-    public UserLoginResponse login(UserLoginRequest userLoginRequest) {
+    public RestApiResponse<Object> login(UserLoginRequest userLoginRequest) {
         String identifier = userLoginRequest.getUserIdentifier();
-        UserLoginResponse userLoginResponse = new UserLoginResponse();
-
         Optional<UserEntityDTO> userOpt = isEmailLike(identifier)
                 ? userRepositories.findByUserEntityDTOEmailIgnoreCase(identifier)
                 : userRepositories.findByUserEntityDTOPhoneNumber(identifier);
-
         if (userOpt.isEmpty()) {
             throw new IllegalStateException("Email or phone number not found");
         }
-
         UserEntityDTO user = userOpt.get();
 
         boolean ok = securityConfig.passwordEncoder().matches(
                 userLoginRequest.getUserPassword(),
                 user.getUserEntityDTOPassword()
         );
-
         String accessToken = userAuthJWT.generateAuthToken(user, 3600);
-        userLoginResponse.setUserLoginResponseToken(accessToken);
-
         if (!ok) {
             throw new IllegalStateException("Invalid Password");
         }
-
-        userLoginResponse.setUserEntityDTOId(user.getUserEntityDTOId());
-        userLoginResponse.setUserEntityDTOFullName(user.getUserEntityDTOFullName());
-        userLoginResponse.setUserEntityDTOEmail(user.getUserEntityDTOEmail());
-        userLoginResponse.setUserEntityDTOPhoneNumber(user.getUserEntityDTOPhoneNumber());
-        userLoginResponse.setUserEntityDTORoleName(user.getUserEntityDTORoleName());
-
-        return userLoginResponse;
+        UserLoginResponse userLoginResponse = UserLoginResponse.builder()
+                .userLoginResponseToken(accessToken)
+                .userEntityDTOId(user.getUserEntityDTOId())
+                .userEntityDTOFullName(user.getUserEntityDTOFullName())
+                .userEntityDTOEmail(user.getUserEntityDTOEmail())
+                .userEntityDTOPhoneNumber(user.getUserEntityDTOPhoneNumber())
+                .userEntityDTORoleName(user.getUserEntityDTORoleName())
+                .build();
+        return RestApiResponse.builder()
+                .restAPIResponseCode(HttpStatus.OK.value())
+                .restAPIResponseMessage("User login successful")
+                .restAPIResponseResults(userLoginResponse)
+                .build();
     }
 
     @Override
-    public UserProfileResponse getUserProfile(UUID userId) {
-        UserEntityDTO user = userRepositories.findById(userId)
+    public RestApiResponse<Object> getUserProfile(UUID userId) {
+        UserEntityDTO userEntityDTO = userRepositories.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
 
-        UserProfileResponse userProfileResponse = new UserProfileResponse();
-        userProfileResponse.setUserEntityDTOId(user.getUserEntityDTOId());
-        userProfileResponse.setUserEntityDTOFullName(user.getUserEntityDTOFullName());
-        userProfileResponse.setUserEntityDTOEmail(user.getUserEntityDTOEmail());
-        userProfileResponse.setUserEntityDTOPhoneNumber(user.getUserEntityDTOPhoneNumber());
-        userProfileResponse.setUserEntityDTORoleName(user.getUserEntityDTORoleName());
-
-        return userProfileResponse;
+        UserProfileResponse userProfileResponse = UserProfileResponse.builder()
+                .userEntityDTOId(userEntityDTO.getUserEntityDTOId())
+                .userEntityDTOFullName(userEntityDTO.getUserEntityDTOFullName())
+                .userEntityDTOEmail(userEntityDTO.getUserEntityDTOEmail())
+                .userEntityDTOPhoneNumber(userEntityDTO.getUserEntityDTOPhoneNumber())
+                .userEntityDTORoleName(userEntityDTO.getUserEntityDTORoleName())
+                .build();
+        return RestApiResponse.builder()
+                .restAPIResponseCode(HttpStatus.OK.value())
+                .restAPIResponseMessage("User profile retrieved successfully")
+                .restAPIResponseResults(userProfileResponse)
+                .build();
     }
 
     @Override
-    public List<UsersDownlineResponse> getUserDownline(UUID referenceUserId) {
+    public RestApiResponse<Object> getUserDownline(UUID referenceUserId) {
         List<UsersReferralEntityDTO> usersDownline = tUsersReferralRepositories
                 .findAllByUsersReferralEntityDTOReferenceUserId(referenceUserId);
         if (usersDownline.isEmpty()) {
             throw new CoreThrowHandlerException("Downline not found");
         }
-        return usersDownline.stream().map(usersReferralEntityDTO -> {
-            UsersDownlineResponse usersDownlineResponse = new UsersDownlineResponse();
-            usersDownlineResponse.setUsersReferralEntityDTOInviteeUserId(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserId());
-            usersDownlineResponse.setUsersReferralEntityDTOInviteeUserFullName(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserFullName());
-            usersDownlineResponse.setUsersReferralEntityDTOInviteeUserPhoneNumber(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserPhoneNumber());
-            usersDownlineResponse.setUsersReferralEntityDTOInviteeUserEmail(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserEmail());
+        List<UsersDownlineResponse> data = usersDownline.stream().map(usersReferralEntityDTO -> {
             BigDecimal commissionValue = userBalanceRepositories
                     .findBalanceAmountByUserId(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserId())
-                    .orElse(BigDecimal.ZERO); // default 0
-            usersDownlineResponse.setUsersReferralEntityDTOInviteeCommissionValue(commissionValue);
-            return usersDownlineResponse;
+                    .orElse(BigDecimal.ZERO);
+            return UsersDownlineResponse.builder()
+                    .usersReferralEntityDTOInviteeUserId(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserId())
+                    .usersReferralEntityDTOInviteeUserFullName(
+                            usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserFullName())
+                    .usersReferralEntityDTOInviteeUserPhoneNumber(
+                            usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserPhoneNumber())
+                    .usersReferralEntityDTOInviteeUserEmail(
+                            usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserEmail())
+                    .usersReferralEntityDTOInviteeCommissionValue(commissionValue)
+                    .build();
         }).collect(Collectors.toList());
+        return RestApiResponse.builder()
+                .restAPIResponseCode(HttpStatus.OK.value())
+                .restAPIResponseMessage("Downline retrieved successfully")
+                .restAPIResponseResults(data)
+                .build();
     }
 
     @Override
-    public UserReferralCodeResponse getReferralCode(UUID userId) {
+    public RestApiResponse<Object> getReferralCode(UUID userId) {
         UserReferralCodeEntityDTO userReferralCodeEntityDTO = tUserReferralCodeRepositories
                 .findByUserReferralEntityDTOUserId(userId)
                 .orElseThrow(() -> new CoreThrowHandlerException("Referral code note found"));
-        return UserReferralCodeResponse.builder()
+        UserReferralCodeResponse userReferralCodeResponse = UserReferralCodeResponse.builder()
                 .userReferralEntityDTOId(userReferralCodeEntityDTO.getUserReferralEntityDTOId())
                 .userReferralEntityDTOCode(userReferralCodeEntityDTO.getUserReferralEntityDTOCode())
                 .userReferralEntityDTOCreatedAt(userReferralCodeEntityDTO.getUserReferralEntityDTOCreatedAt())
+                .build();
+        return RestApiResponse.builder()
+                .restAPIResponseCode(HttpStatus.OK.value())
+                .restAPIResponseMessage("Referral code retrieved successfully")
+                .restAPIResponseResults(userReferralCodeResponse)
                 .build();
     }
 
@@ -248,16 +265,15 @@ public class UserServiceImpl implements UserService {
     }
 
     private static UserResponse getUserResponse(UserEntityDTO userEntityDTO) {
-        UserResponse userResponse = new UserResponse();
-        userResponse.setUserEntityDTOId(userEntityDTO.getUserEntityDTOId());
-        userResponse.setUserEntityDTOFullName(userEntityDTO.getUserEntityDTOFullName());
-        userResponse.setUserEntityDTOEmail(userEntityDTO.getUserEntityDTOEmail());
-        userResponse.setUserEntityDTOPhoneNumber(userEntityDTO.getUserEntityDTOPhoneNumber());
-        userResponse.setUserEntityDTORoleName(userEntityDTO.getUserEntityDTORoleName());
-        userResponse.setUserEntityDTOCreatedDate(userEntityDTO.getUserEntityDTOCreatedDate());
-        return userResponse;
+        return UserResponse.builder()
+                .userEntityDTOId(userEntityDTO.getUserEntityDTOId())
+                .userEntityDTOFullName(userEntityDTO.getUserEntityDTOFullName())
+                .userEntityDTOEmail(userEntityDTO.getUserEntityDTOEmail())
+                .userEntityDTOPhoneNumber(userEntityDTO.getUserEntityDTOPhoneNumber())
+                .userEntityDTORoleName(userEntityDTO.getUserEntityDTORoleName())
+                .userEntityDTOCreatedDate(userEntityDTO.getUserEntityDTOCreatedDate())
+                .build();
     }
-
 }
 
 

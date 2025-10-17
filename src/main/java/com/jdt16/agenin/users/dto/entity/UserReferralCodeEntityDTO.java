@@ -3,10 +3,7 @@ package com.jdt16.agenin.users.dto.entity;
 import com.jdt16.agenin.users.utility.ColumnNameEntityUtility;
 import com.jdt16.agenin.users.utility.TableNameEntityUtility;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -16,6 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 @Table(
         name = TableNameEntityUtility.TABLE_USER_REFERRAL_CODE,
         uniqueConstraints = @UniqueConstraint(columnNames = ColumnNameEntityUtility.COLUMN_ID_USER)
