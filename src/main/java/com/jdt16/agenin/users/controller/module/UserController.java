@@ -39,7 +39,7 @@ public class UserController {
     }
 
     @PostMapping(RestApiPathUtility.API_PATH_MODULE_REFERRAL_CODE)
-    public ResponseEntity<RestApiResponse<?>> generateReferralCode(@RequestHeader("X-User-ID") UUID id) {
+    public ResponseEntity<RestApiResponse<?>> generateReferralCode(@RequestHeader("X-USER-ID") UUID id) {
         UserReferralCodeResponse userReferralCodeResponse = userService.generateReferralCode(id);
 
         RestApiResponse<UserReferralCodeResponse> userReferralCodeResponseRestApiResponse = RestApiResponse.<UserReferralCodeResponse>builder()
@@ -67,7 +67,7 @@ public class UserController {
 
     @GetMapping(RestApiPathUtility.API_PATH_MODULE_PROFILE)
     public ResponseEntity<RestApiResponse<UserProfileResponse>> getUserProfile(
-            @RequestHeader("X-User-ID") UUID id) {
+            @RequestHeader("X-USER-ID") UUID id) {
 
         UserProfileResponse userProfile = userService.getUserProfile(id);
 
@@ -79,9 +79,9 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping(RestApiPathUtility.API_PATH_MODULE_DOWNLINE + RestApiPathUtility.API_PATH_BY_PARENT_ID)
+    @GetMapping(RestApiPathUtility.API_PATH_MODULE_DOWNLINE)
     public ResponseEntity<RestApiResponse<List<UsersDownlineResponse>>> getUserDownline(
-            @PathVariable("reference-user-id") UUID referenceUserId) {
+            @RequestHeader("X-REFERENCE-USER-ID") UUID referenceUserId) {
 
         List<UsersDownlineResponse> userDownline = userService.getUserDownline(referenceUserId);
 
@@ -101,7 +101,7 @@ public class UserController {
 
         RestApiResponse<UserReferralCodeResponse> userReferralCodeResponseRestApiResponse = RestApiResponse.<UserReferralCodeResponse>builder()
                 .restAPIResponseCode(HttpStatus.OK.value())
-                .restAPIResponseMessage("Dapatkan kode referensi dengan sukses")
+                .restAPIResponseMessage("Successfully obtain the Referral Code")
                 .restAPIResponseResults(userReferralCodeResponse)
                 .build();
 

@@ -33,9 +33,9 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final MUserRepositories userRepositories;
-    private final TUserReferralCodeRepositories TUserReferralCodeRepositories;
+    private final TUserReferralCodeRepositories tUserReferralCodeRepositories;
     private final MUserRoleRepositories userRoleRepositories;
-    private final TUsersReferralRepositories TUsersReferralRepositories;
+    private final TUsersReferralRepositories tUsersReferralRepositories;
     private final MUserBalanceRepositories userBalanceRepositories;
     private final SecurityConfig securityConfig = new SecurityConfig();
     private final ReferralCodeGenerator referralCodeGenerator = new ReferralCodeGenerator();
@@ -47,14 +47,13 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserResponse saveUser(UserRequest userRequest) {
         userRepositories.findByUserEntityDTOEmailIgnoreCase(userRequest.getUserEntityDTOEmail())
-                .ifPresent(u -> {
+                .ifPresent(userEntityDTO -> {
                     throw new CoreThrowHandlerException("The user already exists with the email address: " + userRequest.getUserEntityDTOEmail());
                 });
         userRepositories.findByUserEntityDTOPhoneNumber(userRequest.getUserEntityDTOPhoneNumber())
-                .ifPresent(u -> {
+                .ifPresent(userEntityDTO -> {
                     throw new CoreThrowHandlerException("Users already exist with phone numbers: " + userRequest.getUserEntityDTOPhoneNumber());
                 });
-
         referralCodeValidation(userRequest);
         UserRoleEntityDTO userRoleEntityDTO = findRoleForRegistration(userRequest.getUserEntityDTOReferralCode());
 
@@ -81,7 +80,6 @@ public class UserServiceImpl implements UserService {
         return getUserResponse(newUser);
     }
 
-
     private UserRoleEntityDTO findRoleForRegistration(@Nullable String referralCode) {
         final boolean hasReferral = referralCode != null && !referralCode.isBlank();
         final String roleName = hasReferral ? "SUB-AGENT" : "AGENT";
@@ -93,17 +91,16 @@ public class UserServiceImpl implements UserService {
     private void referralCodeValidation(UserRequest userRequest) {
         String referralCode = trimToNull(userRequest.getUserEntityDTOReferralCode());
         if (referralCode != null) {
-            if (!TUserReferralCodeRepositories.existsByUserReferralEntityDTOCodeIgnoreCase(referralCode)) {
+            if (!tUserReferralCodeRepositories.existsByUserReferralEntityDTOCodeIgnoreCase(referralCode)) {
                 throw new CoreThrowHandlerException("Referral Code not found");
             }
-            userReferralCodeEntityDTO = TUserReferralCodeRepositories
+            userReferralCodeEntityDTO = tUserReferralCodeRepositories
                     .findByUserReferralEntityDTOCodeIgnoreCase(referralCode)
                     .orElseThrow(() -> new CoreThrowHandlerException("Referral Code not found"));
         } else {
             userReferralCodeEntityDTO = null;
         }
     }
-
 
     private void saveUsersReferral() {
         if (userReferralCodeEntityDTO == null) {
@@ -123,7 +120,7 @@ public class UserServiceImpl implements UserService {
         usersReferralEntityDTO.setUsersReferralEntityDTOReferenceUserPhoneNumber(referenceUser.getUserEntityDTOPhoneNumber());
         usersReferralEntityDTO.setUsersReferralEntityDTOReferenceUserEmail(referenceUser.getUserEntityDTOEmail());
         usersReferralEntityDTO.setUsersReferralEntityDTOReferralCode(userReferralCodeEntityDTO.getUserReferralEntityDTOCode());
-        TUsersReferralRepositories.save(usersReferralEntityDTO);
+        tUsersReferralRepositories.save(usersReferralEntityDTO);
     }
 
     private static String trimToNull(String s) {
@@ -139,7 +136,7 @@ public class UserServiceImpl implements UserService {
             throw new ResourceNotFoundException("User not found with id: " + userId);
         }
 
-        if (TUserReferralCodeRepositories.existsByUserReferralEntityDTOUserId(userId)) {
+        if (tUserReferralCodeRepositories.existsByUserReferralEntityDTOUserId(userId)) {
             throw new IllegalStateException("The user already has a referral code..");
         }
 
@@ -154,7 +151,7 @@ public class UserServiceImpl implements UserService {
         }
         referralCodeEntityDTO.setUserReferralEntityDTOCode(code);
 
-        TUserReferralCodeRepositories.save(referralCodeEntityDTO);
+        tUserReferralCodeRepositories.save(referralCodeEntityDTO);
 
         return UserReferralCodeResponse.builder()
                 .userReferralEntityDTOCode(code)
@@ -186,7 +183,7 @@ public class UserServiceImpl implements UserService {
         userLoginResponse.setUserLoginResponseToken(accessToken);
 
         if (!ok) {
-            throw new IllegalStateException("Password salah");
+            throw new IllegalStateException("Invalid Password");
         }
 
         userLoginResponse.setUserEntityDTOId(user.getUserEntityDTOId());
@@ -215,7 +212,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UsersDownlineResponse> getUserDownline(UUID referenceUserId) {
-        List<UsersReferralEntityDTO> usersDownline = TUsersReferralRepositories
+        List<UsersReferralEntityDTO> usersDownline = tUsersReferralRepositories
                 .findAllByUsersReferralEntityDTOReferenceUserId(referenceUserId);
         if (usersDownline.isEmpty()) {
             throw new CoreThrowHandlerException("Downline not found");
@@ -236,7 +233,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserReferralCodeResponse getReferralCode(UUID userId) {
-        UserReferralCodeEntityDTO userReferralCodeEntityDTO = TUserReferralCodeRepositories
+        UserReferralCodeEntityDTO userReferralCodeEntityDTO = tUserReferralCodeRepositories
                 .findByUserReferralEntityDTOUserId(userId)
                 .orElseThrow(() -> new CoreThrowHandlerException("Referral code note found"));
         return UserReferralCodeResponse.builder()
