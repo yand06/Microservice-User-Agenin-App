@@ -84,7 +84,7 @@ public class UserServiceImpl implements UserService {
 
     private UserRoleEntityDTO findRoleForRegistration(@Nullable String referralCode) {
         final boolean hasReferral = referralCode != null && !referralCode.isBlank();
-        final String roleName = hasReferral ? "SUB-AGENT" : "AGENT";
+        final String roleName = hasReferral ? "SUB_AGENT" : "AGENT";
         return userRoleRepositories.findByUserRoleEntityDTONameIgnoreCase(roleName)
                 .orElseThrow(() -> new CoreThrowHandlerException(
                         "Role '%s' Not yet prepared, please seed the M_ROLE data first.".formatted(roleName)));
@@ -131,34 +131,42 @@ public class UserServiceImpl implements UserService {
         return t.isEmpty() ? null : t;
     }
 
+    @Transactional
     @Override
     public RestApiResponse<Object> generateReferralCode(UUID userId) {
-        if (!userRepositories.existsById(userId)) {
-            throw new ResourceNotFoundException("User not found with id: " + userId);
-        }
+        UserEntityDTO user = userRepositories.findById(userId)
+                .orElseThrow(() -> new CoreThrowHandlerException("User not found with id: " + userId));
+
         if (tUserReferralCodeRepositories.existsByUserReferralEntityDTOUserId(userId)) {
-            throw new IllegalStateException("The user already has a referral code..");
+            throw new CoreThrowHandlerException("The user already has a referral code..");
+        } else {
+            String referralCode = referralCodeGenerator.generateReferralCode();
+            if (referralCode == null || referralCode.isEmpty()) {
+                throw new CoreThrowHandlerException("Referral referralCode generation failed");
+            } else {
+                UserReferralCodeEntityDTO referralCodeEntityDTO = UserReferralCodeEntityDTO.builder()
+                        .userReferralEntityDTOId(UUID.randomUUID())
+                        .userReferralEntityDTOUserId(userId)
+                        .userReferralEntityDTOCode(referralCode)
+                        .userReferralEntityDTOCreatedAt(LocalDateTime.now())
+                        .build();
+                tUserReferralCodeRepositories.save(referralCodeEntityDTO);
+                if (user.getUserEntityDTORoleName().equals("SUB_AGENT")) {
+                    user.setUserEntityDTORoleName("AGENT");
+                    userRepositories.save(user);
+                }
+                UserReferralCodeResponse referralCodeResponse = UserReferralCodeResponse.builder()
+                        .userReferralEntityDTOId(referralCodeEntityDTO.getUserReferralEntityDTOId())
+                        .userReferralEntityDTOCode(referralCode)
+                        .userReferralEntityDTOCreatedAt(LocalDateTime.now())
+                        .build();
+                return RestApiResponse.builder()
+                        .restAPIResponseCode(HttpStatus.OK.value())
+                        .restAPIResponseMessage("Referral referralCode generated successfully")
+                        .restAPIResponseResults(referralCodeResponse)
+                        .build();
+            }
         }
-        String referralCode = referralCodeGenerator.generateReferralCode();
-        if (referralCode == null || referralCode.isEmpty()) {
-            throw new IllegalStateException("Referral referralCode generation failed");
-        }
-        UserReferralCodeEntityDTO referralCodeEntityDTO = UserReferralCodeEntityDTO.builder()
-                .userReferralEntityDTOId(UUID.randomUUID())
-                .userReferralEntityDTOUserId(userId)
-                .userReferralEntityDTOCode(referralCode)
-                .userReferralEntityDTOCreatedAt(LocalDateTime.now())
-                .build();
-        tUserReferralCodeRepositories.save(referralCodeEntityDTO);
-        UserReferralCodeResponse referralCodeResponse = UserReferralCodeResponse.builder()
-                .userReferralEntityDTOCode(referralCode)
-                .userReferralEntityDTOCreatedAt(LocalDateTime.now())
-                .build();
-        return RestApiResponse.builder()
-                .restAPIResponseCode(HttpStatus.OK.value())
-                .restAPIResponseMessage("Referral referralCode generated successfully")
-                .restAPIResponseResults(referralCodeResponse)
-                .build();
     }
 
     @Override
@@ -247,7 +255,7 @@ public class UserServiceImpl implements UserService {
     public RestApiResponse<Object> getReferralCode(UUID userId) {
         UserReferralCodeEntityDTO userReferralCodeEntityDTO = tUserReferralCodeRepositories
                 .findByUserReferralEntityDTOUserId(userId)
-                .orElseThrow(() -> new CoreThrowHandlerException("Referral code note found"));
+                .orElseThrow(() -> new CoreThrowHandlerException("Referral code not found"));
         UserReferralCodeResponse userReferralCodeResponse = UserReferralCodeResponse.builder()
                 .userReferralEntityDTOId(userReferralCodeEntityDTO.getUserReferralEntityDTOId())
                 .userReferralEntityDTOCode(userReferralCodeEntityDTO.getUserReferralEntityDTOCode())
