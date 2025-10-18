@@ -3,6 +3,8 @@ package com.jdt16.agenin.users.utility;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ColumnNameEntityUtility {
     /* M_USERS */
@@ -45,4 +47,17 @@ public class ColumnNameEntityUtility {
     public static final String COLUMN_USERS_BALANCE_USER_ID = "id_user";
     public static final String COLUMN_USER_BALANCE_AMOUNT = "user_balance_amount";
     public static final String COLUMN_USER_BALANCE_LAST_UPDATE = "user_balance_last_update";
+
+    /* M_COMMISSION */
+    public static final String COLUMN_COMMISSIONS_ID = "commissions_id";
+    public static final String COLUMN_COMMISSIONS_NAME = "commissions_name";
+    public static final String COLUMN_COMMISSIONS_VALUE = "commissions_value";
+    public static final String COLUMN_COMMISSIONS_SETUP = "commissions_setup";
+    public static final String COLUMN_COMMISSIONS_PRODUCT_ID = "product_id";
+    public static final String COLUMN_COMMISSIONS_PRODUCT_NAME = "product_name";
+    public static final String COLUMN_COMMISSIONS_CREATED_DATE = "commissions_created_date";
+    public static final String COLUMN_COMMISSIONS_UPDATED_DATE = "commissions_updated_date";
+
+    public static final UUID USER_ID_ADMIN_VALUE =
+            UUID.fromString("83aee4e6-cd95-418e-819b-569cec1d4809");
 }

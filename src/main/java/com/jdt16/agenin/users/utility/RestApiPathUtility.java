@@ -21,4 +21,5 @@ public class RestApiPathUtility {
     public static final String API_PATH_MODULE_REFERRAL_CODE = "/referral-code";
     public static final String API_PATH_MODULE_DOWNLINE = "/downlines";
     public static final String API_PATH_BY_PARENT_ID = "/{reference-user-id}";
+    public static final String API_PATH_MODULE_UPDATE_COMMISSIONS = "/update-commissions";
 }

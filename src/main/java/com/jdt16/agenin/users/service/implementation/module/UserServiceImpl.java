@@ -3,16 +3,15 @@ package com.jdt16.agenin.users.service.implementation.module;
 import com.jdt16.agenin.users.components.generator.ReferralCodeGenerator;
 import com.jdt16.agenin.users.components.handler.UserAuthJWT;
 import com.jdt16.agenin.users.configuration.security.SecurityConfig;
-import com.jdt16.agenin.users.dto.entity.UserEntityDTO;
-import com.jdt16.agenin.users.dto.entity.UserReferralCodeEntityDTO;
-import com.jdt16.agenin.users.dto.entity.UserRoleEntityDTO;
-import com.jdt16.agenin.users.dto.entity.UsersReferralEntityDTO;
+import com.jdt16.agenin.users.dto.entity.*;
 import com.jdt16.agenin.users.dto.exception.CoreThrowHandlerException;
+import com.jdt16.agenin.users.dto.request.UserAdminUpdateCommissionsRequest;
 import com.jdt16.agenin.users.dto.request.UserLoginRequest;
 import com.jdt16.agenin.users.dto.request.UserRequest;
 import com.jdt16.agenin.users.dto.response.*;
 import com.jdt16.agenin.users.model.repositories.*;
 import com.jdt16.agenin.users.service.interfacing.module.UserService;
+import com.jdt16.agenin.users.utility.ColumnNameEntityUtility;
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +35,7 @@ public class UserServiceImpl implements UserService {
     private final MUserRoleRepositories userRoleRepositories;
     private final TUsersReferralRepositories tUsersReferralRepositories;
     private final MUserBalanceRepositories userBalanceRepositories;
+    private final MCommissionRepositories mCommissionRepositories;
     private final SecurityConfig securityConfig = new SecurityConfig();
     private final ReferralCodeGenerator referralCodeGenerator = new ReferralCodeGenerator();
     private final UserAuthJWT userAuthJWT;
@@ -266,6 +266,36 @@ public class UserServiceImpl implements UserService {
                 .restAPIResponseMessage("Referral code retrieved successfully")
                 .restAPIResponseResults(userReferralCodeResponse)
                 .build();
+    }
+
+    @Override
+    public RestApiResponse<Object> updateCommissions(UUID commissionsId, UserAdminUpdateCommissionsRequest adminUpdateCommissionsRequest) {
+        CommissionEntityDTO commissionsEntityDTO = mCommissionRepositories.findById(commissionsId)
+                .orElseThrow(() -> new CoreThrowHandlerException("Commissions not found"));
+        UserEntityDTO userEntityDTO = userRepositories.findByUserEntityDTOId(ColumnNameEntityUtility.USER_ID_ADMIN_VALUE)
+                .orElseThrow(() -> new CoreThrowHandlerException("User ADMIN not found"));
+
+        if (commissionsEntityDTO.getCommissionsEntityDTOValue().compareTo(BigDecimal.ZERO) < 0) {
+            throw new CoreThrowHandlerException("Commissions value cannot be less than 0");
+        } else {
+            commissionsEntityDTO.setCommissionsEntityDTOValue(adminUpdateCommissionsRequest.getCommissionsEntityDTOValue());
+            commissionsEntityDTO.setCommissionsEntityDTOUpdatedDate(LocalDateTime.now());
+            mCommissionRepositories.save(commissionsEntityDTO);
+
+            UserAdminUpdateCommissionsResponse userAdminUpdateCommissionsResponse = UserAdminUpdateCommissionsResponse.builder()
+                    .updateCommissionsEntityDTORoleName(userEntityDTO.getUserEntityDTORoleName())
+                    .updateCommissionsEntityDTOUserFullName(userEntityDTO.getUserEntityDTOFullName())
+                    .updateCommissionsEntityDTOProductName(commissionsEntityDTO.getCommissionsEntityDTOProductName())
+                    .updateCommissionsEntityDTOValue(commissionsEntityDTO.getCommissionsEntityDTOValue())
+                    .updateCommissionsEntityDTOCreatedDate(commissionsEntityDTO.getCommissionsEntityDTOCreatedDate())
+                    .updateCommissionsEntityDTOUpdatedDate(commissionsEntityDTO.getCommissionsEntityDTOUpdatedDate())
+                    .build();
+            return RestApiResponse.builder()
+                    .restAPIResponseCode(HttpStatus.OK.value())
+                    .restAPIResponseMessage("Commissions updated successfully")
+                    .restAPIResponseResults(userAdminUpdateCommissionsResponse)
+                    .build();
+        }
     }
 
     private boolean isEmailLike(String input) {

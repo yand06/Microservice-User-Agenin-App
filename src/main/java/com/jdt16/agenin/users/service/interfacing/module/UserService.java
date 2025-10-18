@@ -1,5 +1,6 @@
 package com.jdt16.agenin.users.service.interfacing.module;
 
+import com.jdt16.agenin.users.dto.request.UserAdminUpdateCommissionsRequest;
 import com.jdt16.agenin.users.dto.request.UserLoginRequest;
 import com.jdt16.agenin.users.dto.request.UserRequest;
 import com.jdt16.agenin.users.dto.response.*;
@@ -18,4 +19,6 @@ public interface UserService {
     RestApiResponse<Object> getUserDownline(UUID referenceUserId);
 
     RestApiResponse<Object> getReferralCode(UUID userId);
+
+    RestApiResponse<Object> updateCommissions(UUID commissionsId, UserAdminUpdateCommissionsRequest adminUpdateCommissionsRequest);
 }

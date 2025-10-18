@@ -1,5 +1,6 @@
 package com.jdt16.agenin.users.controller.module;
 
+import com.jdt16.agenin.users.dto.request.UserAdminUpdateCommissionsRequest;
 import com.jdt16.agenin.users.dto.request.UserLoginRequest;
 import com.jdt16.agenin.users.dto.request.UserRequest;
 import com.jdt16.agenin.users.dto.response.*;
@@ -51,5 +52,13 @@ public class UserController {
     @GetMapping(RestApiPathUtility.API_PATH_MODULE_REFERRAL_CODE)
     public ResponseEntity<RestApiResponse<?>> getReferralCode(@RequestHeader("X-USER-ID") UUID userId) {
         return ResponseEntity.ok(userService.getReferralCode(userId));
+    }
+
+    @PatchMapping(RestApiPathUtility.API_PATH_MODULE_UPDATE_COMMISSIONS)
+    public ResponseEntity<RestApiResponse<?>> updateCommissions(
+            @RequestHeader("X-COMMISSIONS-ID") UUID commissionsId,
+            @Valid @RequestBody UserAdminUpdateCommissionsRequest adminUpdateCommissionsRequest
+    ) {
+        return ResponseEntity.ok(userService.updateCommissions(commissionsId, adminUpdateCommissionsRequest));
     }
 }
