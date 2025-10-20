@@ -185,7 +185,7 @@ public class UserServiceImpl implements UserService {
 
             // Send audit log UPDATE role
             auditLogProducerService.logUpdate(
-                    "M_USER",
+                    "M_USERS",
                     user.getUserEntityDTOId(),
                     oldData,
                     newData,
