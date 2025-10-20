@@ -1,4 +1,4 @@
-package com.jdt16.agenin.users.service.audit;
+package com.jdt16.agenin.users.service.implementation.module;
 
 import com.jdt16.agenin.users.dto.request.LogRequestDTO;
 import lombok.RequiredArgsConstructor;

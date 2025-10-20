@@ -10,7 +10,6 @@ import com.jdt16.agenin.users.dto.request.UserLoginRequest;
 import com.jdt16.agenin.users.dto.request.UserRequest;
 import com.jdt16.agenin.users.dto.response.*;
 import com.jdt16.agenin.users.model.repositories.*;
-import com.jdt16.agenin.users.service.audit.AuditLogProducerService;
 import com.jdt16.agenin.users.service.interfacing.module.UserService;
 import com.jdt16.agenin.users.utility.ColumnNameEntityUtility;
 import com.jdt16.agenin.users.utility.RequestContextUtil;
