@@ -29,7 +29,7 @@ public class CommissionEntityDTO {
     @Column(name = ColumnNameEntityUtility.COLUMN_COMMISSIONS_NAME, nullable = false)
     private String commissionsEntityDTOName;
 
-    @Column(name = ColumnNameEntityUtility.COLUMN_COMMISSIONS_VALUE, nullable = false)
+    @Column(name = ColumnNameEntityUtility.COLUMN_COMMISSIONS_VALUE, nullable = false, precision = 19, scale = 4)
     private BigDecimal commissionsEntityDTOValue;
 
     @Column(name = ColumnNameEntityUtility.COLUMN_COMMISSIONS_SETUP, nullable = false)

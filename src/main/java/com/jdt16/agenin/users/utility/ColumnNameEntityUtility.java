@@ -58,6 +58,6 @@ public class ColumnNameEntityUtility {
     public static final String COLUMN_COMMISSIONS_CREATED_DATE = "commissions_created_date";
     public static final String COLUMN_COMMISSIONS_UPDATED_DATE = "commissions_updated_date";
 
-    public static final UUID USER_ID_ADMIN_VALUE =
-            UUID.fromString("83aee4e6-cd95-418e-819b-569cec1d4809");
+    public static final UUID USER_ID_ADMIN_VALUE = UUID.fromString("83aee4e6-cd95-418e-819b-569cec1d4809");
+
 }

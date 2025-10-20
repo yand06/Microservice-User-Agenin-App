@@ -10,6 +10,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.UUID;
 
@@ -22,12 +24,18 @@ import java.util.UUID;
 public class UserBalanceEntityDTO {
     @Id
     @Column(name = ColumnNameEntityUtility.COLUMN_USERS_BALANCE_ID, nullable = false, updatable = false)
+    @JdbcTypeCode(SqlTypes.UUID)
     private String userBalanceEntityDTOId;
 
     @Column(name = ColumnNameEntityUtility.COLUMN_USERS_BALANCE_USER_ID, nullable = false, updatable = false)
+    @JdbcTypeCode(SqlTypes.UUID)
     private UUID userBalanceEntityDTOUserId;
 
-    @Column(name = ColumnNameEntityUtility.COLUMN_USER_BALANCE_AMOUNT, nullable = false)
+    @Column(
+            name = ColumnNameEntityUtility.COLUMN_USER_BALANCE_AMOUNT,
+            nullable = false,
+            precision = 19, scale = 4
+    )
     private String userBalanceEntityDTOAmount;
 
     @Column(name = ColumnNameEntityUtility.COLUMN_USER_BALANCE_LAST_UPDATE, nullable = false)

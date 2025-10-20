@@ -2,18 +2,57 @@ spring:
   application:
     name: AGENIN_USERS
     version: 1.0.0
+
   banner:
     location: classpath:/banner-text.txt
-  dataSource:
+
+  datasource:
     url: jdbc:postgresql://${AGENIN_DB_HOST}:${AGENIN_DB_PORT}/${AGENIN_DB_NAME}
     username: ${AGENIN_DB_USERNAME}
     password: ${AGENIN_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
   jpa:
     properties:
       hibernate:
         globally_quoted_identifiers: true
+        format_sql: true
+        show_sql: false
     hibernate:
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      ddl-auto: none
+
+  kafka:
+    bootstrap-servers: ${AGENIN_BOOTSTRAP_KFK_SERVER:localhost:9092}
+    producer:
+      acks: all
+      retries: 10
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+        delivery.timeout.ms: 120000
+        linger.ms: 10
+        compression.type: lz4
+        batch.size: 32768
+        spring.json.add.type.headers: false  # TAMBAHKAN INI - mencegah type header dikirim
+    topics:
+      audit-log: create-log-po
+
 server:
   port: 8181
+
+logging:
+  level:
+    root: INFO
+    com.jdt16.agenin.users: DEBUG
+    org.springframework.kafka: INFO
+    org.apache.kafka: WARN
