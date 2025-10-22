@@ -13,6 +13,7 @@ import com.jdt16.agenin.users.model.repositories.*;
 import com.jdt16.agenin.users.service.interfacing.module.UserService;
 import com.jdt16.agenin.users.utility.ColumnNameEntityUtility;
 import com.jdt16.agenin.users.utility.RequestContextUtil;
+import com.jdt16.agenin.users.utility.TableNameEntityUtility;
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -74,13 +75,12 @@ public class UserServiceImpl implements UserService {
         userRepositories.save(newUserEntityDTO);
         saveUsersReferral(newUserEntityDTO, userReferralCodeEntityDTO);
 
-        // Send audit log CREATE (SYSTEM user karena ini self-registration)
         Map<String, Object> newData = buildUserDataMap(newUserEntityDTO);
         auditLogProducerService.logCreate(
-                "M_USERS",
+                TableNameEntityUtility.TABLE_USERS,
                 newUserEntityDTO.getUserEntityDTOId(),
                 newData,
-                newUserEntityDTO.getUserEntityDTOId(), // userId = new user itself (self-registration)
+                newUserEntityDTO.getUserEntityDTOId(),
                 newUserEntityDTO.getUserEntityDTOFullName(),
                 newUserEntityDTO.getUserEntityDTORoleId(),
                 newUserEntityDTO.getUserEntityDTORoleName(),
@@ -172,7 +172,6 @@ public class UserServiceImpl implements UserService {
 
         tUserReferralCodeRepositories.save(referralCodeEntityDTO);
 
-        // Update role jika SUB_AGENT menjadi AGENT
         Map<String, Object> oldData = null;
         Map<String, Object> newData = null;
 
@@ -182,9 +181,8 @@ public class UserServiceImpl implements UserService {
             userRepositories.save(user);
             newData = Map.of("roleName", "AGENT");
 
-            // Send audit log UPDATE role
             auditLogProducerService.logUpdate(
-                    "M_USERS",
+                    TableNameEntityUtility.TABLE_USERS,
                     user.getUserEntityDTOId(),
                     oldData,
                     newData,
@@ -197,7 +195,6 @@ public class UserServiceImpl implements UserService {
             );
         }
 
-        // Send audit log CREATE referral code
         Map<String, Object> referralData = Map.of(
                 "referralCodeId", referralCodeEntityDTO.getUserReferralEntityDTOId().toString(),
                 "userId", userId.toString(),
@@ -206,7 +203,7 @@ public class UserServiceImpl implements UserService {
         );
 
         auditLogProducerService.logCreate(
-                "T_USER_REFERRAL_CODE",
+                TableNameEntityUtility.TABLE_USER_REFERRAL_CODE,
                 referralCodeEntityDTO.getUserReferralEntityDTOId(),
                 referralData,
                 userId,
@@ -237,7 +234,6 @@ public class UserServiceImpl implements UserService {
                 ? userRepositories.findByUserEntityDTOEmailIgnoreCase(identifier)
                 : userRepositories.findByUserEntityDTOPhoneNumber(identifier);
 
-        // Log LOGIN FAILED - User Not Found
         if (userOpt.isEmpty()) {
             logLoginFailed(
                     identifier,
@@ -253,7 +249,6 @@ public class UserServiceImpl implements UserService {
                 userEntityDTO.getUserEntityDTOPassword()
         );
 
-        // Log LOGIN FAILED - Invalid Password
         if (!ok) {
             logLoginFailed(
                     identifier,
@@ -269,7 +264,6 @@ public class UserServiceImpl implements UserService {
 
         String accessToken = userAuthJWT.generateAuthToken(userEntityDTO, 3600);
 
-        // Log LOGIN SUCCESS
         Map<String, Object> loginData = Map.of(
                 "userId", userEntityDTO.getUserEntityDTOId().toString(),
                 "loginAt", LocalDateTime.now().toString(),
@@ -278,7 +272,7 @@ public class UserServiceImpl implements UserService {
         );
 
         auditLogProducerService.logCreate(
-                "M_USERS",
+                TableNameEntityUtility.TABLE_USERS,
                 UUID.randomUUID(),
                 loginData,
                 userEntityDTO.getUserEntityDTOId(),
@@ -390,7 +384,6 @@ public class UserServiceImpl implements UserService {
             throw new CoreThrowHandlerException("Commissions value cannot be less than 0");
         }
 
-        // Simpan old data untuk audit
         Map<String, Object> oldData = Map.of(
                 "value", commissionsEntityDTO.getCommissionsEntityDTOValue().toString(),
                 "updatedDate", commissionsEntityDTO.getCommissionsEntityDTOUpdatedDate().toString()
@@ -400,15 +393,13 @@ public class UserServiceImpl implements UserService {
         commissionsEntityDTO.setCommissionsEntityDTOUpdatedDate(LocalDateTime.now());
         mCommissionRepositories.save(commissionsEntityDTO);
 
-        // New data untuk audit
         Map<String, Object> newData = Map.of(
                 "value", commissionsEntityDTO.getCommissionsEntityDTOValue().toString(),
                 "updatedDate", commissionsEntityDTO.getCommissionsEntityDTOUpdatedDate().toString()
         );
 
-        // Send audit log UPDATE
         auditLogProducerService.logUpdate(
-                "M_COMMISSION",
+                TableNameEntityUtility.TABLE_COMMISSION,
                 commissionsId,
                 oldData,
                 newData,
@@ -451,9 +442,6 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
-    /**
-     * Helper method untuk build user data map untuk audit log
-     */
     private Map<String, Object> buildUserDataMap(UserEntityDTO user) {
         Map<String, Object> data = new HashMap<>();
         data.put("id", user.getUserEntityDTOId().toString());
@@ -466,9 +454,6 @@ public class UserServiceImpl implements UserService {
         return data;
     }
 
-    /**
-     * Log login failed event when user not found
-     */
     private void logLoginFailed(String identifier, String failureReason, String details) {
         Map<String, Object> loginFailedData = Map.of(
                 "identifier", identifier,
@@ -479,23 +464,19 @@ public class UserServiceImpl implements UserService {
                 "status", "FAILED"
         );
 
-        // Send dengan userId null karena user tidak ditemukan
         auditLogProducerService.logCreate(
-                "M_USERS",
+                TableNameEntityUtility.TABLE_USERS,
                 UUID.randomUUID(),
                 loginFailedData,
-                null,  // userId null karena user tidak ditemukan
-                "UNKNOWN",  // userFullName unknown
-                null,  // roleId null
-                "UNKNOWN",  // roleName unknown
+                null,
+                "UNKNOWN",
+                null,
+                "UNKNOWN",
                 RequestContextUtil.getUserAgent(),
                 RequestContextUtil.getClientIpAddress()
         );
     }
 
-    /**
-     * Log login failed event when password invalid (user ditemukan)
-     */
     private void logLoginFailed(
             String identifier,
             String failureReason,
@@ -516,7 +497,7 @@ public class UserServiceImpl implements UserService {
         );
 
         auditLogProducerService.logCreate(
-                "M_USERS",
+                TableNameEntityUtility.TABLE_USERS,
                 UUID.randomUUID(),
                 loginFailedData,
                 userId,

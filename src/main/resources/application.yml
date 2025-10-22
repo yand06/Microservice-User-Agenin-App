@@ -43,7 +43,7 @@ spring:
         linger.ms: 10
         compression.type: lz4
         batch.size: 32768
-        spring.json.add.type.headers: false  # TAMBAHKAN INI - mencegah type header dikirim
+        spring.json.add.type.headers: false
     topics:
       audit-log: create-log-po
 
