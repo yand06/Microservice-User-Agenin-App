@@ -77,7 +77,7 @@ public class UserServiceImpl implements UserService {
         // Send audit log CREATE (SYSTEM user karena ini self-registration)
         Map<String, Object> newData = buildUserDataMap(newUserEntityDTO);
         auditLogProducerService.logCreate(
-                "M_USER",
+                "M_USERS",
                 newUserEntityDTO.getUserEntityDTOId(),
                 newData,
                 newUserEntityDTO.getUserEntityDTOId(), // userId = new user itself (self-registration)

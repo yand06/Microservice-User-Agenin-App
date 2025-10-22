@@ -30,7 +30,7 @@ spring:
       ddl-auto: none
 
   kafka:
-    bootstrap-servers: ${AGENIN_BOOTSTRAP_KFK_SERVER:localhost:9092}
+    bootstrap-servers: ${AGENIN_BOOTSTRAP_KFK_SERVER}
     producer:
       acks: all
       retries: 10

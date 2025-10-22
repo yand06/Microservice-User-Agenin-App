@@ -51,7 +51,7 @@ public class LogRequestDTO {
     @NotNull(message = "Changed at timestamp is required")
     private LocalDateTime logEntityDTOChangedAt;
 
-    @JsonProperty("roleAd")
+    @JsonProperty("roleId")
     @NotNull(message = "Role ID is required")
     private UUID logEntityDTORoleId;
 
