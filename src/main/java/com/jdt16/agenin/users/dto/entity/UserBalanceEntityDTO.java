@@ -6,13 +6,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -20,12 +19,13 @@ import java.util.UUID;
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 @Table(name = TableNameEntityUtility.TABLE_USER_BALANCE)
 public class UserBalanceEntityDTO {
     @Id
     @Column(name = ColumnNameEntityUtility.COLUMN_USERS_BALANCE_ID, nullable = false, updatable = false)
     @JdbcTypeCode(SqlTypes.UUID)
-    private String userBalanceEntityDTOId;
+    private UUID userBalanceEntityDTOId;
 
     @Column(name = ColumnNameEntityUtility.COLUMN_USERS_BALANCE_USER_ID, nullable = false, updatable = false)
     @JdbcTypeCode(SqlTypes.UUID)
@@ -36,8 +36,8 @@ public class UserBalanceEntityDTO {
             nullable = false,
             precision = 19, scale = 4
     )
-    private String userBalanceEntityDTOAmount;
+    private BigDecimal userBalanceEntityDTOAmount;
 
     @Column(name = ColumnNameEntityUtility.COLUMN_USER_BALANCE_LAST_UPDATE, nullable = false)
-    private String userBalanceEntityDTOLastUpdate;
+    private LocalDateTime userBalanceEntityDTOLastUpdate;
 }

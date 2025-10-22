@@ -35,12 +35,15 @@ public class UserServiceImpl implements UserService {
     private final TUserReferralCodeRepositories tUserReferralCodeRepositories;
     private final MUserRoleRepositories userRoleRepositories;
     private final TUsersReferralRepositories tUsersReferralRepositories;
-    private final MUserBalanceRepositories userBalanceRepositories;
+    private final MUserBalanceRepositories mUserBalanceRepositories;
+    private final MUserWalletRepositories mUserWalletRepositories;
     private final MCommissionRepositories mCommissionRepositories;
-    private final AuditLogProducerService auditLogProducerService;
+    private final AuditLogProducerServiceImpl auditLogProducerServiceImpl;
     private final SecurityConfig securityConfig = new SecurityConfig();
     private final ReferralCodeGenerator referralCodeGenerator = new ReferralCodeGenerator();
     private final UserAuthJWT userAuthJWT;
+    private final String ROLE_AGENT = "AGENT";
+    private final String ROLE_SUB_AGENT = "SUB_AGENT";
 
     @Override
     @Transactional
@@ -54,9 +57,8 @@ public class UserServiceImpl implements UserService {
                     throw new CoreThrowHandlerException("Users already exist with phone numbers: " + userRequest.getUserEntityDTOPhoneNumber());
                 });
 
-        UserReferralCodeEntityDTO userReferralCodeEntityDTO = null;
+        UserReferralCodeEntityDTO userReferralCodeEntityDTO = this.userReferralCodeEntityDTO;
         referralCodeValidation(userRequest);
-        userReferralCodeEntityDTO = this.tempReferralCode;
 
         UserRoleEntityDTO userRoleEntityDTO = findRoleForRegistration(userRequest.getUserEntityDTOReferralCode());
 
@@ -74,9 +76,11 @@ public class UserServiceImpl implements UserService {
 
         userRepositories.save(newUserEntityDTO);
         saveUsersReferral(newUserEntityDTO, userReferralCodeEntityDTO);
+        createUserBalance(newUserEntityDTO.getUserEntityDTOId());
+        createUserWallet(newUserEntityDTO.getUserEntityDTOId());
 
         Map<String, Object> newData = buildUserDataMap(newUserEntityDTO);
-        auditLogProducerService.logCreate(
+        auditLogProducerServiceImpl.logCreate(
                 TableNameEntityUtility.TABLE_USERS,
                 newUserEntityDTO.getUserEntityDTOId(),
                 newData,
@@ -97,25 +101,25 @@ public class UserServiceImpl implements UserService {
 
     private UserRoleEntityDTO findRoleForRegistration(@Nullable String referralCode) {
         final boolean hasReferral = referralCode != null && !referralCode.isBlank();
-        final String roleName = hasReferral ? "SUB_AGENT" : "AGENT";
+        final String roleName = hasReferral ? ROLE_SUB_AGENT : ROLE_AGENT;
         return userRoleRepositories.findByUserRoleEntityDTONameIgnoreCase(roleName)
                 .orElseThrow(() -> new CoreThrowHandlerException(
                         "Role '%s' Not yet prepared, please seed the M_ROLE data first.".formatted(roleName)));
     }
 
-    private UserReferralCodeEntityDTO tempReferralCode;
+    private UserReferralCodeEntityDTO userReferralCodeEntityDTO;
 
     private void referralCodeValidation(UserRequest userRequest) {
-        String referralCode = trimToNull(userRequest.getUserEntityDTOReferralCode());
-        if (referralCode != null) {
-            if (!tUserReferralCodeRepositories.existsByUserReferralEntityDTOCodeIgnoreCase(referralCode)) {
+        String userReferralCode = trimToNull(userRequest.getUserEntityDTOReferralCode());
+        if (userReferralCode != null) {
+            if (!tUserReferralCodeRepositories.existsByUserReferralEntityDTOCodeIgnoreCase(userReferralCode)) {
                 throw new CoreThrowHandlerException("Referral Code not found");
             }
-            tempReferralCode = tUserReferralCodeRepositories
-                    .findByUserReferralEntityDTOCodeIgnoreCase(referralCode)
+            userReferralCodeEntityDTO = tUserReferralCodeRepositories
+                    .findByUserReferralEntityDTOCodeIgnoreCase(userReferralCode)
                     .orElseThrow(() -> new CoreThrowHandlerException("Referral Code not found"));
         } else {
-            tempReferralCode = null;
+            userReferralCodeEntityDTO = null;
         }
     }
 
@@ -142,16 +146,38 @@ public class UserServiceImpl implements UserService {
         tUsersReferralRepositories.save(usersReferralEntityDTO);
     }
 
-    private static String trimToNull(String s) {
-        if (s == null) return null;
-        String t = s.trim();
-        return t.isEmpty() ? null : t;
+    private static String trimToNull(String value) {
+        if (value == null) return null;
+        String trim = value.trim();
+        return trim.isEmpty() ? null : trim;
+    }
+
+    private void createUserBalance(UUID userId) {
+        UserBalanceEntityDTO userBalanceEntityDTO = UserBalanceEntityDTO.builder()
+                .userBalanceEntityDTOId(UUID.randomUUID())
+                .userBalanceEntityDTOUserId(userId)
+                .userBalanceEntityDTOAmount(BigDecimal.valueOf(0))
+                .userBalanceEntityDTOLastUpdate(LocalDateTime.now())
+                .build();
+
+        mUserBalanceRepositories.save(userBalanceEntityDTO);
+    }
+
+    private void createUserWallet(UUID userId) {
+        UserWalletEntityDTO userWalletEntityDTO = UserWalletEntityDTO.builder()
+                .userWalletEntityDTOId(UUID.randomUUID())
+                .userWalletEntityDTOUserId(userId)
+                .userWalletEntityDTOAmount(BigDecimal.valueOf(0))
+                .userWalletEntityDTOLastUpdate(LocalDateTime.now())
+                .build();
+
+        mUserWalletRepositories.save(userWalletEntityDTO);
     }
 
     @Transactional
     @Override
     public RestApiResponse<Object> generateReferralCode(UUID userId) {
-        UserEntityDTO user = userRepositories.findById(userId)
+        UserEntityDTO userEntityDTO = userRepositories.findById(userId)
                 .orElseThrow(() -> new CoreThrowHandlerException("User not found with id: " + userId));
 
         if (tUserReferralCodeRepositories.existsByUserReferralEntityDTOUserId(userId)) {
@@ -172,24 +198,24 @@ public class UserServiceImpl implements UserService {
 
         tUserReferralCodeRepositories.save(referralCodeEntityDTO);
 
-        Map<String, Object> oldData = null;
-        Map<String, Object> newData = null;
+        Map<String, Object> oldData;
+        Map<String, Object> newData;
 
-        if (user.getUserEntityDTORoleName().equals("SUB_AGENT")) {
-            oldData = Map.of("roleName", "SUB_AGENT");
-            user.setUserEntityDTORoleName("AGENT");
-            userRepositories.save(user);
-            newData = Map.of("roleName", "AGENT");
+        if (userEntityDTO.getUserEntityDTORoleName().equals(ROLE_SUB_AGENT)) {
+            oldData = Map.of("roleName", ROLE_SUB_AGENT);
+            userEntityDTO.setUserEntityDTORoleName(ROLE_AGENT);
+            userRepositories.save(userEntityDTO);
+            newData = Map.of("roleName", userEntityDTO.getUserEntityDTORoleName());
 
-            auditLogProducerService.logUpdate(
+            auditLogProducerServiceImpl.logUpdate(
                     TableNameEntityUtility.TABLE_USERS,
-                    user.getUserEntityDTOId(),
+                    userEntityDTO.getUserEntityDTOId(),
                     oldData,
                     newData,
                     userId,
-                    user.getUserEntityDTOFullName(),
-                    user.getUserEntityDTORoleId(),
-                    user.getUserEntityDTORoleName(),
+                    userEntityDTO.getUserEntityDTOFullName(),
+                    userEntityDTO.getUserEntityDTORoleId(),
+                    userEntityDTO.getUserEntityDTORoleName(),
                     RequestContextUtil.getUserAgent(),
                     RequestContextUtil.getClientIpAddress()
             );
@@ -202,14 +228,14 @@ public class UserServiceImpl implements UserService {
                 "createdAt", referralCodeEntityDTO.getUserReferralEntityDTOCreatedAt().toString()
         );
 
-        auditLogProducerService.logCreate(
+        auditLogProducerServiceImpl.logCreate(
                 TableNameEntityUtility.TABLE_USER_REFERRAL_CODE,
                 referralCodeEntityDTO.getUserReferralEntityDTOId(),
                 referralData,
                 userId,
-                user.getUserEntityDTOFullName(),
-                user.getUserEntityDTORoleId(),
-                user.getUserEntityDTORoleName(),
+                userEntityDTO.getUserEntityDTOFullName(),
+                userEntityDTO.getUserEntityDTORoleId(),
+                userEntityDTO.getUserEntityDTORoleName(),
                 RequestContextUtil.getUserAgent(),
                 RequestContextUtil.getClientIpAddress()
         );
@@ -230,20 +256,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public RestApiResponse<Object> login(UserLoginRequest userLoginRequest) {
         String identifier = userLoginRequest.getUserIdentifier();
-        Optional<UserEntityDTO> userOpt = isEmailLike(identifier)
+        Optional<UserEntityDTO> userEntityDTOOptional = isEmailLike(identifier)
                 ? userRepositories.findByUserEntityDTOEmailIgnoreCase(identifier)
                 : userRepositories.findByUserEntityDTOPhoneNumber(identifier);
 
-        if (userOpt.isEmpty()) {
+        if (userEntityDTOOptional.isEmpty()) {
             logLoginFailed(
-                    identifier,
-                    "USER_NOT_FOUND",
-                    "Email or phone number not found"
+                    identifier
             );
             throw new IllegalStateException("Email or phone number not found");
         }
 
-        UserEntityDTO userEntityDTO = userOpt.get();
+        UserEntityDTO userEntityDTO = userEntityDTOOptional.get();
         boolean ok = securityConfig.passwordEncoder().matches(
                 userLoginRequest.getUserPassword(),
                 userEntityDTO.getUserEntityDTOPassword()
@@ -252,7 +276,6 @@ public class UserServiceImpl implements UserService {
         if (!ok) {
             logLoginFailed(
                     identifier,
-                    "INVALID_PASSWORD",
                     "Invalid password attempt for user: " + userEntityDTO.getUserEntityDTOFullName(),
                     userEntityDTO.getUserEntityDTOId(),
                     userEntityDTO.getUserEntityDTOFullName(),
@@ -271,7 +294,7 @@ public class UserServiceImpl implements UserService {
                 "status", "SUCCESS"
         );
 
-        auditLogProducerService.logCreate(
+        auditLogProducerServiceImpl.logCreate(
                 TableNameEntityUtility.TABLE_USERS,
                 UUID.randomUUID(),
                 loginData,
@@ -298,7 +321,6 @@ public class UserServiceImpl implements UserService {
                 .restAPIResponseResults(userLoginResponse)
                 .build();
     }
-
 
     @Override
     public RestApiResponse<Object> getUserProfile(UUID userId) {
@@ -330,7 +352,7 @@ public class UserServiceImpl implements UserService {
         }
 
         List<UsersDownlineResponse> data = usersDownline.stream().map(usersReferralEntityDTO -> {
-            BigDecimal commissionValue = userBalanceRepositories
+            BigDecimal commissionValue = mUserBalanceRepositories
                     .findBalanceAmountByUserId(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserId())
                     .orElse(BigDecimal.ZERO);
 
@@ -398,7 +420,7 @@ public class UserServiceImpl implements UserService {
                 "updatedDate", commissionsEntityDTO.getCommissionsEntityDTOUpdatedDate().toString()
         );
 
-        auditLogProducerService.logUpdate(
+        auditLogProducerServiceImpl.logUpdate(
                 TableNameEntityUtility.TABLE_COMMISSION,
                 commissionsId,
                 oldData,
@@ -454,17 +476,17 @@ public class UserServiceImpl implements UserService {
         return data;
     }
 
-    private void logLoginFailed(String identifier, String failureReason, String details) {
+    private void logLoginFailed(String identifier) {
         Map<String, Object> loginFailedData = Map.of(
                 "identifier", identifier,
-                "failureReason", failureReason,
-                "details", details,
+                "failureReason", "USER_NOT_FOUND",
+                "details", "Email or phone number not found",
                 "loginAt", LocalDateTime.now().toString(),
                 "loginMethod", isEmailLike(identifier) ? "EMAIL" : "PHONE",
                 "status", "FAILED"
         );
 
-        auditLogProducerService.logCreate(
+        auditLogProducerServiceImpl.logCreate(
                 TableNameEntityUtility.TABLE_USERS,
                 UUID.randomUUID(),
                 loginFailedData,
@@ -479,7 +501,6 @@ public class UserServiceImpl implements UserService {
 
     private void logLoginFailed(
             String identifier,
-            String failureReason,
             String details,
             UUID userId,
             String userFullName,
@@ -489,14 +510,14 @@ public class UserServiceImpl implements UserService {
         Map<String, Object> loginFailedData = Map.of(
                 "identifier", identifier,
                 "userId", userId != null ? userId.toString() : "UNKNOWN",
-                "failureReason", failureReason,
+                "failureReason", "INVALID_PASSWORD",
                 "details", details,
                 "loginAt", LocalDateTime.now().toString(),
                 "loginMethod", isEmailLike(identifier) ? "EMAIL" : "PHONE",
                 "status", "FAILED"
         );
 
-        auditLogProducerService.logCreate(
+        auditLogProducerServiceImpl.logCreate(
                 TableNameEntityUtility.TABLE_USERS,
                 UUID.randomUUID(),
                 loginFailedData,

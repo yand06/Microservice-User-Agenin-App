@@ -46,7 +46,13 @@ public class ColumnNameEntityUtility {
     public static final String COLUMN_USERS_BALANCE_ID = "user_balance_id";
     public static final String COLUMN_USERS_BALANCE_USER_ID = "id_user";
     public static final String COLUMN_USER_BALANCE_AMOUNT = "user_balance_amount";
-    public static final String COLUMN_USER_BALANCE_LAST_UPDATE = "user_balance_last_update";
+    public static final String COLUMN_USER_BALANCE_LAST_UPDATE = "user_balance_last_updated";
+
+    /* M_USERS_WALLET */
+    public static final String COLUMN_USERS_WALLET_ID = "user_wallet_id";
+    public static final String COLUMN_USERS_WALLET_USER_ID = "id_user";
+    public static final String COLUMN_USER_WALLET_AMOUNT = "user_wallet_amount";
+    public static final String COLUMN_USER_WALLET_LAST_UPDATE = "user_wallet_last_updated";
 
     /* M_COMMISSION */
     public static final String COLUMN_COMMISSIONS_ID = "commissions_id";

@@ -16,16 +16,13 @@ import java.util.concurrent.CompletableFuture;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AuditLogProducerService {
+public class AuditLogProducerServiceImpl {
 
     private final KafkaTemplate<String, LogRequestDTO> auditLogKafkaTemplate;
 
     @Value("${kafka.audit-log-topic:create-log-po}")
     private String auditLogTopic;
 
-    /**
-     * Mengirim audit log ke Kafka untuk operasi CREATE
-     */
     public void logCreate(String tableName, UUID recordId, Map<String, Object> newData,
                           UUID userId, String userFullname, UUID roleId, String roleName,
                           String userAgent, String ipAddress) {
@@ -49,9 +46,6 @@ public class AuditLogProducerService {
         sendAuditLog(logRequest);
     }
 
-    /**
-     * Mengirim audit log ke Kafka untuk operasi UPDATE
-     */
     public void logUpdate(String tableName, UUID recordId,
                           Map<String, Object> oldData, Map<String, Object> newData,
                           UUID userId, String userFullname, UUID roleId, String roleName,
@@ -76,37 +70,7 @@ public class AuditLogProducerService {
         sendAuditLog(logRequest);
     }
 
-    /**
-     * Mengirim audit log ke Kafka untuk operasi DELETE
-     */
-    public void logDelete(String tableName, UUID recordId, Map<String, Object> oldData,
-                          UUID userId, String userFullname, UUID roleId, String roleName,
-                          String userAgent, String ipAddress) {
-
-        LogRequestDTO logRequest = LogRequestDTO.builder()
-                .logEntityDTOAuditLogsId(UUID.randomUUID())
-                .logEntityDTOTableName(tableName)
-                .logEntityDTORecordId(recordId)
-                .logEntityDTOAction("DELETE")
-                .logEntityDTOOldData(oldData)
-                .logEntityDTONewData(Map.of())  // Empty untuk DELETE
-                .logEntityDTOUserId(userId)
-                .logEntityDTOUserFullname(userFullname)
-                .logEntityDTORoleId(roleId)
-                .logEntityDTORoleName(roleName)
-                .logEntityDTOUserAgent(userAgent)
-                .logEntityDTOIpAddress(ipAddress)
-                .logEntityDTOChangedAt(LocalDateTime.now())
-                .build();
-
-        sendAuditLog(logRequest);
-    }
-
-    /**
-     * Method internal untuk send ke Kafka dengan key partitioning
-     */
     private void sendAuditLog(LogRequestDTO logRequest) {
-        // Key format: tableName#recordId untuk menjaga ordering per entitas
         String key = logRequest.getLogEntityDTOTableName() + "#" + logRequest.getLogEntityDTORecordId();
 
         CompletableFuture<SendResult<String, LogRequestDTO>> future =

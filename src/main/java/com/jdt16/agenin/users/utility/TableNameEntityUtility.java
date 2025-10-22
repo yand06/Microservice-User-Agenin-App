@@ -16,4 +16,5 @@ public class TableNameEntityUtility {
     public static final String TABLE_TRANSACTION = "M_TRANSACTION";
     public static final String TABLE_TRANSACTION_OPEN_BANK_ACCOUNT = "T_TRANSACTION_OPEN_BANK_ACCOUNT";
     public static final String TABLE_AUDIT_LOGS = "AUDIT_LOGS";
+    public static final String TABLE_USER_WALLET = "M_USER_WALLET";
 }
