@@ -20,5 +20,5 @@ public interface UserService {
 
     RestApiResponse<Object> getReferralCode(UUID userId);
 
-    RestApiResponse<Object> updateCommissions(UUID commissionsId, UserAdminUpdateCommissionsRequest adminUpdateCommissionsRequest);
+    RestApiResponse<Object> updateCommissions(UUID productId, UserAdminUpdateCommissionsRequest adminUpdateCommissionsRequest);
 }

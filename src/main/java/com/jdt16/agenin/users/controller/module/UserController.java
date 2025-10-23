@@ -56,9 +56,9 @@ public class UserController {
 
     @PatchMapping(RestApiPathUtility.API_PATH_MODULE_UPDATE_COMMISSIONS)
     public ResponseEntity<RestApiResponse<?>> updateCommissions(
-            @RequestHeader("X-COMMISSIONS-ID") UUID commissionsId,
+            @RequestHeader("X-PRODUCT-ID") UUID productId,
             @Valid @RequestBody UserAdminUpdateCommissionsRequest adminUpdateCommissionsRequest
     ) {
-        return ResponseEntity.ok(userService.updateCommissions(commissionsId, adminUpdateCommissionsRequest));
+        return ResponseEntity.ok(userService.updateCommissions(productId, adminUpdateCommissionsRequest));
     }
 }

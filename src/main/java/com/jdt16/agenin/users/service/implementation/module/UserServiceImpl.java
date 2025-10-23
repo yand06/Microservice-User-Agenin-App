@@ -395,9 +395,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public RestApiResponse<Object> updateCommissions(UUID commissionsId, UserAdminUpdateCommissionsRequest adminUpdateCommissionsRequest) {
-        CommissionEntityDTO commissionsEntityDTO = mCommissionRepositories.findById(commissionsId)
-                .orElseThrow(() -> new CoreThrowHandlerException("Commissions not found"));
+    public RestApiResponse<Object> updateCommissions(UUID productId, UserAdminUpdateCommissionsRequest adminUpdateCommissionsRequest) {
+        CommissionEntityDTO commissionsEntityDTO = mCommissionRepositories.findByCommissionsEntityDTOProductId(productId)
+                .orElseThrow(() -> new CoreThrowHandlerException("Product not found"));
 
         UserEntityDTO userEntityDTO = userRepositories.findByUserEntityDTOId(ColumnNameEntityUtility.USER_ID_ADMIN_VALUE)
                 .orElseThrow(() -> new CoreThrowHandlerException("User ADMIN not found"));
@@ -422,7 +422,7 @@ public class UserServiceImpl implements UserService {
 
         auditLogProducerServiceImpl.logUpdate(
                 TableNameEntityUtility.TABLE_COMMISSION,
-                commissionsId,
+                productId,
                 oldData,
                 newData,
                 userEntityDTO.getUserEntityDTOId(),

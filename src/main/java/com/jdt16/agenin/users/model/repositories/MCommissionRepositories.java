@@ -9,4 +9,5 @@ import java.util.UUID;
 
 @Repository
 public interface MCommissionRepositories extends JpaRepository<CommissionEntityDTO, UUID> {
+    Optional<CommissionEntityDTO> findByCommissionsEntityDTOProductId(UUID productId);
 }
