@@ -36,6 +36,7 @@ public class UserServiceImpl implements UserService {
     private final MUserRoleRepositories userRoleRepositories;
     private final TUsersReferralRepositories tUsersReferralRepositories;
     private final MUserBalanceRepositories mUserBalanceRepositories;
+    private final TUsersBalanceHistoricalRepositories tUsersBalanceHistoricalRepositories;
     private final MUserWalletRepositories mUserWalletRepositories;
     private final MCommissionRepositories mCommissionRepositories;
     private final AuditLogProducerServiceImpl auditLogProducerServiceImpl;
@@ -351,22 +352,29 @@ public class UserServiceImpl implements UserService {
             throw new CoreThrowHandlerException("Downline not found");
         }
 
-        List<UsersDownlineResponse> data = usersDownline.stream().map(usersReferralEntityDTO -> {
-            BigDecimal commissionValue = mUserBalanceRepositories
-                    .findBalanceAmountByUserId(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserId())
-                    .orElse(BigDecimal.ZERO);
+        UUID parentBalanceId = mUserBalanceRepositories
+                .findBalanceIdByUserId(referenceUserId)
+                .orElseThrow(() -> new CoreThrowHandlerException("Parent balance not found"));
 
-            return UsersDownlineResponse.builder()
-                    .usersReferralEntityDTOInviteeUserId(usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserId())
-                    .usersReferralEntityDTOInviteeUserFullName(
-                            usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserFullName())
-                    .usersReferralEntityDTOInviteeUserPhoneNumber(
-                            usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserPhoneNumber())
-                    .usersReferralEntityDTOInviteeUserEmail(
-                            usersReferralEntityDTO.getUsersReferralEntityDTOInviteeUserEmail())
-                    .usersReferralEntityDTOInviteeCommissionValue(commissionValue)
-                    .build();
-        }).collect(Collectors.toList());
+        List<UsersDownlineResponse> data = usersDownline.stream()
+                .map(referral -> {
+                    UUID childUserId = referral.getUsersReferralEntityDTOInviteeUserId();
+
+                    BigDecimal totalCommission = tUsersBalanceHistoricalRepositories
+                            .getTotalCommissionFromChild(parentBalanceId, childUserId);
+
+                    return UsersDownlineResponse.builder()
+                            .usersReferralEntityDTOInviteeUserId(childUserId)
+                            .usersReferralEntityDTOInviteeUserFullName(
+                                    referral.getUsersReferralEntityDTOInviteeUserFullName())
+                            .usersReferralEntityDTOInviteeUserPhoneNumber(
+                                    referral.getUsersReferralEntityDTOInviteeUserPhoneNumber())
+                            .usersReferralEntityDTOInviteeUserEmail(
+                                    referral.getUsersReferralEntityDTOInviteeUserEmail())
+                            .usersReferralEntityDTOInviteeCommissionValue(totalCommission)
+                            .build();
+                })
+                .collect(Collectors.toList());
 
         return RestApiResponse.builder()
                 .restAPIResponseCode(HttpStatus.OK.value())

@@ -48,6 +48,13 @@ public class ColumnNameEntityUtility {
     public static final String COLUMN_USER_BALANCE_AMOUNT = "user_balance_amount";
     public static final String COLUMN_USER_BALANCE_LAST_UPDATE = "user_balance_last_updated";
 
+    /* M_USERS_BALANCE_HISTORICAL */
+    public static final String COLUMN_USERS_BALANCE_HISTORICAL_ID = "users_balance_historical_id";
+    public static final String COLUMN_USERS_BALANCE_HISTORICAL_AMOUNT = "balance_amount";
+    public static final String COLUMN_USER_BALANCE_HISTORICAL_TRANSACTION_ID = "transaction_id";
+    public static final String COLUMN_USER_BALANCE_HISTORICAL_CREATED_DATE = "created_date";
+    public static final String COLUMN_USER_BALANCE_HISTORICAL_USER_BALANCE_ID = "user_balance_id";
+
     /* M_USERS_WALLET */
     public static final String COLUMN_USERS_WALLET_ID = "user_wallet_id";
     public static final String COLUMN_USERS_WALLET_USER_ID = "id_user";

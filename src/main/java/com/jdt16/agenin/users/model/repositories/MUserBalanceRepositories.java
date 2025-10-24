@@ -12,6 +12,21 @@ import java.util.UUID;
 
 @Repository
 public interface MUserBalanceRepositories extends JpaRepository<UserBalanceEntityDTO, UUID> {
-    @Query("SELECT u.userBalanceEntityDTOAmount FROM UserBalanceEntityDTO u WHERE u.userBalanceEntityDTOUserId = :userBalanceEntityDTOUserId")
-    Optional<BigDecimal> findBalanceAmountByUserId(@Param("userBalanceEntityDTOUserId") UUID userId);
+
+    @Query("SELECT u.userBalanceEntityDTOAmount " +
+            "FROM UserBalanceEntityDTO u " +
+            "WHERE u.userBalanceEntityDTOUserId = :userBalanceEntityDTOUserId")
+    Optional<BigDecimal> findBalanceAmountByUserId(
+            @Param("userBalanceEntityDTOUserId") UUID userId
+    );
+
+    /**
+     * Mendapatkan user_balance_id berdasarkan user_id
+     */
+    @Query("SELECT u.userBalanceEntityDTOId " +
+            "FROM UserBalanceEntityDTO u " +
+            "WHERE u.userBalanceEntityDTOUserId = :userId")
+    Optional<UUID> findBalanceIdByUserId(
+            @Param("userId") UUID userId
+    );
 }
