@@ -43,7 +43,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class UserServiceImplOneLayerTest {
+class UserServiceImplTest {
 
     @Mock
     private MCommissionRepositories commissionRepositories;
