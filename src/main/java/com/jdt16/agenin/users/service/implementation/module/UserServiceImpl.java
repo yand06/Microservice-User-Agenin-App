@@ -18,6 +18,8 @@ import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -48,6 +50,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "users", key = "#userId")
     public RestApiResponse<Object> saveUser(UserRequest userRequest) {
         userRepositories.findByUserEntityDTOEmailIgnoreCase(userRequest.getUserEntityDTOEmail())
                 .ifPresent(userEntityDTO -> {
@@ -177,6 +180,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
+    @Cacheable(value = "referralCodes", key = "#userId")
     public RestApiResponse<Object> generateReferralCode(UUID userId) {
         UserEntityDTO userEntityDTO = userRepositories.findById(userId)
                 .orElseThrow(() -> new CoreThrowHandlerException("User not found with id: " + userId));
@@ -324,6 +328,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Cacheable(value = "users", key = "#userId", unless = "#result == null")
     public RestApiResponse<Object> getUserProfile(UUID userId) {
         UserEntityDTO userEntityDTO = userRepositories.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
