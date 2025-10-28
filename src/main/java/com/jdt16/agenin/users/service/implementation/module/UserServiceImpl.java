@@ -19,6 +19,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -50,7 +51,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "users", key = "#userId")
+    @CacheEvict(value = "users", allEntries = true)
     public RestApiResponse<Object> saveUser(UserRequest userRequest) {
         userRepositories.findByUserEntityDTOEmailIgnoreCase(userRequest.getUserEntityDTOEmail())
                 .ifPresent(userEntityDTO -> {
@@ -180,7 +181,8 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    @Cacheable(value = "referralCodes", key = "#userId")
+    @CachePut(value = "referralCodes", key = "#userId")  // CHANGED: @Cacheable → @CachePut
+    @CacheEvict(value = "users", key = "#userId")  // ADDED: Evict user cache jika rol
     public RestApiResponse<Object> generateReferralCode(UUID userId) {
         UserEntityDTO userEntityDTO = userRepositories.findById(userId)
                 .orElseThrow(() -> new CoreThrowHandlerException("User not found with id: " + userId));
@@ -389,6 +391,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Cacheable(value = "referralCodes", key = "#userId")
     public RestApiResponse<Object> getReferralCode(UUID userId) {
         UserReferralCodeEntityDTO userReferralCodeEntityDTO = tUserReferralCodeRepositories
                 .findByUserReferralEntityDTOUserId(userId)
@@ -408,6 +411,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public RestApiResponse<Object> updateCommissions(UUID productId, UserAdminUpdateCommissionsRequest adminUpdateCommissionsRequest) {
         CommissionEntityDTO commissionsEntityDTO = mCommissionRepositories.findByCommissionsEntityDTOProductId(productId)
                 .orElseThrow(() -> new CoreThrowHandlerException("Product not found"));

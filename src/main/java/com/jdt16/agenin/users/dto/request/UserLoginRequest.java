@@ -1,5 +1,6 @@
 package com.jdt16.agenin.users.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 

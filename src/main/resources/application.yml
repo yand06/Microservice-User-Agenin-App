@@ -47,20 +47,45 @@ spring:
     topics:
       audit-log: create-log-po
 
-    #   Redis Configuration
-    data:
-      redis:
-        host: ${AGENIN_REDIS_HOST}
-        port: ${AGENIN_REDIS_PORT}
-        password: ${AGENIN_REDIS_PASSWORD}
-        timeout: 60000
+  # Redis Configuration dengan Lettuce Pool
+  data:
+    redis:
+      host: ${AGENIN_REDIS_HOST}
+      port: ${AGENIN_REDIS_PORT}
+      password: ${AGENIN_REDIS_PASSWORD}
+      timeout: 60s
+      connect-timeout: 5s
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 2
+          max-wait: 10s
+          time-between-eviction-runs: 60s
+        shutdown-timeout: 100ms
 
-    #   Cache Configuration
-    cache:
-      type: redis
-      redis:
-        time-to-live: 600000
-        cache-null-values: false
+  # Cache Configuration
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000ms
+      cache-null-values: false
+      enable-statistics: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+  health:
+    redis:
+      enabled: true
+    db:
+      enabled: true
 
 server:
   port: 8181
