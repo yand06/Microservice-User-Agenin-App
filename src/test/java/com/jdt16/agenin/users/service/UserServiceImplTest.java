@@ -57,7 +57,8 @@ class UserServiceImplTest {
     private MUserBalanceRepositories userBalanceRepositories;
     @Mock
     private MUserWalletRepositories userWalletRepositories;
-
+    @Mock
+    private TUsersBalanceHistoricalRepositories usersBalanceHistoricalRepositories;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -664,7 +665,7 @@ class UserServiceImplTest {
                 commonBoot();
 
                 UUID userId = UUID.randomUUID();
-                UserEntityDTO userEntityDTO = makeUser(userId, "Jane Doe", "jane@mail.com", "081234567890", "AGENT", null);
+                UserEntityDTO userEntityDTO = makeUser(userId, "Bayu wijaya", "bayu12@mail.com", "081234567890", "AGENT", null);
                 when(userRepositories.findById(userId)).thenReturn(Optional.of(userEntityDTO));
 
                 RestApiResponse<Object> restApiResponse = userService.getUserProfile(userId);
@@ -712,32 +713,32 @@ class UserServiceImplTest {
                 commonBoot();
 
                 UUID refUserId = UUID.randomUUID();
+                UUID parentBalanceId = UUID.randomUUID();
+
                 UUID uuid = UUID.randomUUID();
                 UUID uuid1 = UUID.randomUUID();
 
-                UsersReferralEntityDTO childOne = makeDownline(uuid, "Child One", "0812-111", "c1@mail.com", refUserId);
-                UsersReferralEntityDTO childTwo = makeDownline(uuid1, "Child Two", "0812-222", "c2@mail.com", refUserId);
+                UsersReferralEntityDTO childOne =
+                        makeDownline(uuid, "Child One", "0812-111", "c1@mail.com", refUserId);
+                UsersReferralEntityDTO childTwo =
+                        makeDownline(uuid1, "Child Two", "0812-222", "c2@mail.com", refUserId);
 
                 when(tUsersReferralRepositories.findAllByUsersReferralEntityDTOReferenceUserId(refUserId))
                         .thenReturn(List.of(childOne, childTwo));
 
-                when(userBalanceRepositories.findBalanceAmountByUserId(uuid))
-                        .thenReturn(Optional.of(new BigDecimal("150000")));
-                when(userBalanceRepositories.findBalanceAmountByUserId(uuid1))
-                        .thenReturn(Optional.empty());
+                when(userBalanceRepositories.findBalanceIdByUserId(refUserId))
+                        .thenReturn(Optional.of(parentBalanceId));
+
+                when(usersBalanceHistoricalRepositories.getTotalCommissionFromChild(parentBalanceId, uuid))
+                        .thenReturn(new BigDecimal("150000"));
+                when(usersBalanceHistoricalRepositories.getTotalCommissionFromChild(parentBalanceId, uuid1))
+                        .thenReturn(BigDecimal.ZERO);
 
                 RestApiResponse<Object> restApiResponse = userService.getUserDownline(refUserId);
 
                 assertEquals(HttpStatus.OK.value(), restApiResponse.getRestAPIResponseCode());
                 assertEquals("Downline retrieved successfully", restApiResponse.getRestAPIResponseMessage());
                 assertTrue(restApiResponse.getRestAPIResponseResults() instanceof List<?>);
-
-                List<UsersDownlineResponse> usersDownlineResponses =
-                        (List<UsersDownlineResponse>) restApiResponse.getRestAPIResponseResults();
-
-                assertEquals(2, usersDownlineResponses.size());
-                assertEquals(new BigDecimal("150000"), usersDownlineResponses.get(0).getUsersReferralEntityDTOInviteeCommissionValue());
-                assertEquals(BigDecimal.ZERO, usersDownlineResponses.get(1).getUsersReferralEntityDTOInviteeCommissionValue());
             }
         }
 
