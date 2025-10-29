@@ -8,10 +8,7 @@ import com.jdt16.agenin.users.dto.exception.CoreThrowHandlerException;
 import com.jdt16.agenin.users.dto.request.UserAdminUpdateCommissionsRequest;
 import com.jdt16.agenin.users.dto.request.UserLoginRequest;
 import com.jdt16.agenin.users.dto.request.UserRequest;
-import com.jdt16.agenin.users.dto.response.RestApiResponse;
-import com.jdt16.agenin.users.dto.response.UserAdminUpdateCommissionsResponse;
-import com.jdt16.agenin.users.dto.response.UserLoginResponse;
-import com.jdt16.agenin.users.dto.response.UserReferralCodeResponse;
+import com.jdt16.agenin.users.dto.response.*;
 import com.jdt16.agenin.users.model.repositories.*;
 import com.jdt16.agenin.users.service.implementation.module.AuditLogProducerServiceImpl;
 import com.jdt16.agenin.users.service.implementation.module.UserServiceImpl;
@@ -29,6 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
@@ -59,7 +57,8 @@ class UserServiceImplTest {
     private MUserBalanceRepositories userBalanceRepositories;
     @Mock
     private MUserWalletRepositories userWalletRepositories;
-
+    @Mock
+    private TUsersBalanceHistoricalRepositories usersBalanceHistoricalRepositories;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -78,70 +77,70 @@ class UserServiceImplTest {
     private UserServiceImpl userService;
 
     private static UserRequest makeUserRequest(String email, String phone, String fullName, String pwd, String referral) {
-        UserRequest r = new UserRequest();
-        r.setUserEntityDTOEmail(email);
-        r.setUserEntityDTOPhoneNumber(phone);
-        r.setUserEntityDTOFullName(fullName);
-        r.setUserEntityDTOPassword(pwd);
-        r.setUserEntityDTOReferralCode(referral);
-        return r;
+        UserRequest userRequest = new UserRequest();
+        userRequest.setUserEntityDTOEmail(email);
+        userRequest.setUserEntityDTOPhoneNumber(phone);
+        userRequest.setUserEntityDTOFullName(fullName);
+        userRequest.setUserEntityDTOPassword(pwd);
+        userRequest.setUserEntityDTOReferralCode(referral);
+        return userRequest;
     }
 
     private static UserLoginRequest makeLogin(String identifier, String password) {
-        UserLoginRequest r = new UserLoginRequest();
-        r.setUserIdentifier(identifier);
-        r.setUserPassword(password);
-        return r;
+        UserLoginRequest userLoginRequest = new UserLoginRequest();
+        userLoginRequest.setUserIdentifier(identifier);
+        userLoginRequest.setUserPassword(password);
+        return userLoginRequest;
     }
 
     private static UserEntityDTO makeUser(UUID id, String fullName, String email, String phone, String role, String hashedPwd) {
-        UserEntityDTO u = new UserEntityDTO();
-        u.setUserEntityDTOId(id);
-        u.setUserEntityDTOFullName(fullName);
-        u.setUserEntityDTOEmail(email);
-        u.setUserEntityDTOPhoneNumber(phone);
-        u.setUserEntityDTORoleName(role);
-        u.setUserEntityDTOPassword(hashedPwd);
-        return u;
+        UserEntityDTO userEntityDTO = new UserEntityDTO();
+        userEntityDTO.setUserEntityDTOId(id);
+        userEntityDTO.setUserEntityDTOFullName(fullName);
+        userEntityDTO.setUserEntityDTOEmail(email);
+        userEntityDTO.setUserEntityDTOPhoneNumber(phone);
+        userEntityDTO.setUserEntityDTORoleName(role);
+        userEntityDTO.setUserEntityDTOPassword(hashedPwd);
+        return userEntityDTO;
     }
 
     private static UserRoleEntityDTO makeRole(String name) {
-        UserRoleEntityDTO r = new UserRoleEntityDTO();
-        r.setUserRoleEntityDTOId(UUID.randomUUID());
-        r.setUserRoleEntityDTOName(name);
-        return r;
+        UserRoleEntityDTO userRoleEntityDTO = new UserRoleEntityDTO();
+        userRoleEntityDTO.setUserRoleEntityDTOId(UUID.randomUUID());
+        userRoleEntityDTO.setUserRoleEntityDTOName(name);
+        return userRoleEntityDTO;
     }
 
     private static UsersReferralEntityDTO makeDownline(UUID inviteeId, String name, String phone, String email, UUID refId) {
-        UsersReferralEntityDTO d = new UsersReferralEntityDTO();
-        d.setUsersReferralEntityDTOId(UUID.randomUUID());
-        d.setUsersReferralEntityDTOInviteeUserId(inviteeId);
-        d.setUsersReferralEntityDTOInviteeUserFullName(name);
-        d.setUsersReferralEntityDTOInviteeUserPhoneNumber(phone);
-        d.setUsersReferralEntityDTOInviteeUserEmail(email);
-        d.setUsersReferralEntityDTOReferenceUserId(refId);
-        d.setUsersReferralEntityDTOReferralCode("REF-XYZ");
-        return d;
+        UsersReferralEntityDTO usersReferralEntityDTO = new UsersReferralEntityDTO();
+        usersReferralEntityDTO.setUsersReferralEntityDTOId(UUID.randomUUID());
+        usersReferralEntityDTO.setUsersReferralEntityDTOInviteeUserId(inviteeId);
+        usersReferralEntityDTO.setUsersReferralEntityDTOInviteeUserFullName(name);
+        usersReferralEntityDTO.setUsersReferralEntityDTOInviteeUserPhoneNumber(phone);
+        usersReferralEntityDTO.setUsersReferralEntityDTOInviteeUserEmail(email);
+        usersReferralEntityDTO.setUsersReferralEntityDTOReferenceUserId(refId);
+        usersReferralEntityDTO.setUsersReferralEntityDTOReferralCode("REF-XYZ");
+        return usersReferralEntityDTO;
     }
 
     private static UserReferralCodeEntityDTO makeReferralEntity(UUID userId, String code, LocalDateTime createdAt) {
-        UserReferralCodeEntityDTO e = new UserReferralCodeEntityDTO();
-        e.setUserReferralEntityDTOId(UUID.randomUUID());
-        e.setUserReferralEntityDTOUserId(userId);
-        e.setUserReferralEntityDTOCode(code);
-        e.setUserReferralEntityDTOCreatedAt(createdAt);
-        return e;
+        UserReferralCodeEntityDTO userReferralCodeEntityDTO = new UserReferralCodeEntityDTO();
+        userReferralCodeEntityDTO.setUserReferralEntityDTOId(UUID.randomUUID());
+        userReferralCodeEntityDTO.setUserReferralEntityDTOUserId(userId);
+        userReferralCodeEntityDTO.setUserReferralEntityDTOCode(code);
+        userReferralCodeEntityDTO.setUserReferralEntityDTOCreatedAt(createdAt);
+        return userReferralCodeEntityDTO;
     }
 
     private static CommissionEntityDTO makeCommission(UUID id, String productName, UUID productId, BigDecimal value, LocalDateTime created, LocalDateTime updated) {
-        CommissionEntityDTO c = new CommissionEntityDTO();
-        c.setCommissionsEntityDTOId(id);
-        c.setCommissionsEntityDTOProductName(productName);
-        c.setCommissionsEntityDTOProductId(productId);
-        c.setCommissionsEntityDTOValue(value);
-        c.setCommissionsEntityDTOCreatedDate(created);
-        c.setCommissionsEntityDTOUpdatedDate(updated);
-        return c;
+        CommissionEntityDTO commissionEntityDTO = new CommissionEntityDTO();
+        commissionEntityDTO.setCommissionsEntityDTOId(id);
+        commissionEntityDTO.setCommissionsEntityDTOProductName(productName);
+        commissionEntityDTO.setCommissionsEntityDTOProductId(productId);
+        commissionEntityDTO.setCommissionsEntityDTOValue(value);
+        commissionEntityDTO.setCommissionsEntityDTOCreatedDate(created);
+        commissionEntityDTO.setCommissionsEntityDTOUpdatedDate(updated);
+        return commissionEntityDTO;
     }
 
     private static final String ROLE_SUB_AGENT = "SUB_AGENT";
@@ -168,7 +167,7 @@ class UserServiceImplTest {
             void register_withoutReferral_success() {
                 commonBoot();
 
-                UserRequest req = makeUserRequest("new.user@mail.com", "08123456789", "New User", "Passw0rd!", null);
+                UserRequest userRequest = makeUserRequest("new.user@mail.com", "08123456789", "New User", "Passw0rd!", null);
 
                 when(userRepositories.findByUserEntityDTOEmailIgnoreCase("new.user@mail.com"))
                         .thenReturn(Optional.empty());
@@ -181,10 +180,10 @@ class UserServiceImplTest {
                 ArgumentCaptor<UserEntityDTO> userCap = ArgumentCaptor.forClass(UserEntityDTO.class);
                 when(userRepositories.save(userCap.capture())).thenAnswer(inv -> inv.getArgument(0));
 
-                RestApiResponse<Object> resp = userService.saveUser(req);
+                RestApiResponse<Object> restApiResponse = userService.saveUser(userRequest);
 
-                assertEquals(HttpStatus.OK.value(), resp.getRestAPIResponseCode());
-                assertEquals("User successfully registered", resp.getRestAPIResponseMessage());
+                assertEquals(HttpStatus.OK.value(), restApiResponse.getRestAPIResponseCode());
+                assertEquals("User successfully registered", restApiResponse.getRestAPIResponseMessage());
                 verify(tUsersReferralRepositories, never()).save(any());
 
                 UserEntityDTO saved = userCap.getValue();
@@ -198,7 +197,7 @@ class UserServiceImplTest {
                 commonBoot();
 
                 String code = "REF-12345";
-                UserRequest req = makeUserRequest("child@mail.com", "08111111111", "Child User", "S3cret!", code);
+                UserRequest userRequest = makeUserRequest("child@mail.com", "08111111111", "Child User", "S3cret!", code);
 
                 when(userRepositories.findByUserEntityDTOEmailIgnoreCase("child@mail.com"))
                         .thenReturn(Optional.empty());
@@ -221,10 +220,10 @@ class UserServiceImplTest {
                 ArgumentCaptor<UserEntityDTO> userCap = ArgumentCaptor.forClass(UserEntityDTO.class);
                 when(userRepositories.save(userCap.capture())).thenAnswer(inv -> inv.getArgument(0));
 
-                RestApiResponse<Object> resp = userService.saveUser(req);
+                RestApiResponse<Object> restApiResponse = userService.saveUser(userRequest);
 
-                assertEquals(HttpStatus.OK.value(), resp.getRestAPIResponseCode());
-                assertEquals("User successfully registered", resp.getRestAPIResponseMessage());
+                assertEquals(HttpStatus.OK.value(), restApiResponse.getRestAPIResponseCode());
+                assertEquals("User successfully registered", restApiResponse.getRestAPIResponseMessage());
 
                 verify(tUsersReferralRepositories, never()).save(any(UsersReferralEntityDTO.class));
 
@@ -232,12 +231,12 @@ class UserServiceImplTest {
             }
 
             @Test
-            @DisplayName("200 - referral code valid tapi owner tidak ditemukan → user tersimpan SUB_AGENT, UsersReferral tidak disimpan")
+            @DisplayName("200 - referral code valid but missing owner → user saved SUB_AGENT")
             void register_referralOwnerMissing() {
                 commonBoot();
 
                 String code = "REF-OK";
-                UserRequest req = makeUserRequest("user@mail.com", "08123", "User", "pw", code);
+                UserRequest userRequest = makeUserRequest("user@mail.com", "08123", "User", "pw", code);
 
                 when(userRepositories.findByUserEntityDTOEmailIgnoreCase("user@mail.com"))
                         .thenReturn(Optional.empty());
@@ -261,10 +260,10 @@ class UserServiceImplTest {
                 ArgumentCaptor<UserEntityDTO> userCap = ArgumentCaptor.forClass(UserEntityDTO.class);
                 when(userRepositories.save(userCap.capture())).thenAnswer(inv -> inv.getArgument(0));
 
-                RestApiResponse<Object> resp = userService.saveUser(req);
+                RestApiResponse<Object> restApiResponse = userService.saveUser(userRequest);
 
-                assertEquals(HttpStatus.OK.value(), resp.getRestAPIResponseCode());
-                assertEquals("User successfully registered", resp.getRestAPIResponseMessage());
+                assertEquals(HttpStatus.OK.value(), restApiResponse.getRestAPIResponseCode());
+                assertEquals("User successfully registered", restApiResponse.getRestAPIResponseMessage());
                 verify(userRepositories, times(1)).save(any(UserEntityDTO.class));
                 verify(tUsersReferralRepositories, never()).save(any());
 
@@ -280,12 +279,12 @@ class UserServiceImplTest {
             void register_duplicateEmail() {
                 commonBoot();
 
-                UserRequest req = makeUserRequest("dup@mail.com", "08123", "Dup", "pw", null);
+                UserRequest userRequest = makeUserRequest("dup@mail.com", "08123", "Dup", "pw", null);
                 when(userRepositories.findByUserEntityDTOEmailIgnoreCase("dup@mail.com"))
                         .thenReturn(Optional.of(new UserEntityDTO()));
 
-                CoreThrowHandlerException ex = assertThrows(CoreThrowHandlerException.class, () -> userService.saveUser(req));
-                assertTrue(ex.getMessage().toLowerCase().contains("already exists"));
+                CoreThrowHandlerException coreThrowHandlerException = assertThrows(CoreThrowHandlerException.class, () -> userService.saveUser(userRequest));
+                assertTrue(coreThrowHandlerException.getMessage().toLowerCase().contains("already exists"));
                 verify(userRepositories, never()).save(any());
             }
 
@@ -294,12 +293,12 @@ class UserServiceImplTest {
             void register_duplicatePhone() {
                 commonBoot();
 
-                UserRequest req = makeUserRequest("unique@mail.com", "08123456789", "DupPhone", "pw", null);
+                UserRequest userRequest = makeUserRequest("unique@mail.com", "08123456789", "DupPhone", "pw", null);
                 when(userRepositories.findByUserEntityDTOEmailIgnoreCase("unique@mail.com")).thenReturn(Optional.empty());
                 when(userRepositories.findByUserEntityDTOPhoneNumber("08123456789")).thenReturn(Optional.of(new UserEntityDTO()));
 
-                CoreThrowHandlerException ex = assertThrows(CoreThrowHandlerException.class, () -> userService.saveUser(req));
-                assertTrue(ex.getMessage().toLowerCase().contains("users already exist"));
+                CoreThrowHandlerException coreThrowHandlerException = assertThrows(CoreThrowHandlerException.class, () -> userService.saveUser(userRequest));
+                assertTrue(coreThrowHandlerException.getMessage().toLowerCase().contains("users already exist"));
                 verify(userRepositories, never()).save(any());
             }
 
@@ -308,13 +307,13 @@ class UserServiceImplTest {
             void register_roleNotPrepared() {
                 commonBoot();
 
-                UserRequest req = makeUserRequest("user@mail.com", "08123", "User", "pw", null);
+                UserRequest userRequest = makeUserRequest("user@mail.com", "08123", "User", "pw", null);
                 when(userRepositories.findByUserEntityDTOEmailIgnoreCase("user@mail.com")).thenReturn(Optional.empty());
                 when(userRepositories.findByUserEntityDTOPhoneNumber("08123")).thenReturn(Optional.empty());
                 when(userRoleRepositories.findByUserRoleEntityDTONameIgnoreCase("AGENT")).thenReturn(Optional.empty());
 
-                CoreThrowHandlerException ex = assertThrows(CoreThrowHandlerException.class, () -> userService.saveUser(req));
-                assertTrue(ex.getMessage().contains("Role 'AGENT'"));
+                CoreThrowHandlerException coreThrowHandlerException = assertThrows(CoreThrowHandlerException.class, () -> userService.saveUser(userRequest));
+                assertTrue(coreThrowHandlerException.getMessage().contains("Role 'AGENT'"));
             }
         }
     }
@@ -333,30 +332,30 @@ class UserServiceImplTest {
                 String email = "user@mail.com";
                 String raw = "Secret123!";
 
-                var realEncoder = new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
+                var realEncoder = new BCryptPasswordEncoder();
                 when(securityConfig.passwordEncoder()).thenReturn(realEncoder);
                 String hashed = realEncoder.encode(raw);
 
                 UUID id = UUID.randomUUID();
-                UserEntityDTO user = makeUser(id, "User One", email, "0812xxxx", "AGENT", hashed);
+                UserEntityDTO userEntityDTO = makeUser(id, "User One", email, "0812xxxx", "AGENT", hashed);
 
                 when(userRepositories.findByUserEntityDTOEmailIgnoreCase(email))
-                        .thenReturn(Optional.of(user));
+                        .thenReturn(Optional.of(userEntityDTO));
 
                 when(userAuthJWT.generateAuthToken(any(UserEntityDTO.class), eq(3600)))
                         .thenReturn("jwt-token-123");
 
-                RestApiResponse<Object> resp = userService.login(makeLogin(email, raw));
+                RestApiResponse<Object> restApiResponse = userService.login(makeLogin(email, raw));
 
-                assertEquals(HttpStatus.OK.value(), resp.getRestAPIResponseCode());
-                assertEquals("User login successful", resp.getRestAPIResponseMessage());
-                UserLoginResponse body = (UserLoginResponse) resp.getRestAPIResponseResults();
-                assertEquals("jwt-token-123", body.getUserLoginResponseToken());
-                assertEquals(id, body.getUserEntityDTOId());
-                assertEquals("User One", body.getUserEntityDTOFullName());
-                assertEquals(email, body.getUserEntityDTOEmail());
-                assertEquals("0812xxxx", body.getUserEntityDTOPhoneNumber());
-                assertEquals("AGENT", body.getUserEntityDTORoleName());
+                assertEquals(HttpStatus.OK.value(), restApiResponse.getRestAPIResponseCode());
+                assertEquals("User login successful", restApiResponse.getRestAPIResponseMessage());
+                UserLoginResponse userLoginResponse = (UserLoginResponse) restApiResponse.getRestAPIResponseResults();
+                assertEquals("jwt-token-123", userLoginResponse.getUserLoginResponseToken());
+                assertEquals(id, userLoginResponse.getUserEntityDTOId());
+                assertEquals("User One", userLoginResponse.getUserEntityDTOFullName());
+                assertEquals(email, userLoginResponse.getUserEntityDTOEmail());
+                assertEquals("0812xxxx", userLoginResponse.getUserEntityDTOPhoneNumber());
+                assertEquals("AGENT", userLoginResponse.getUserEntityDTORoleName());
             }
 
 
@@ -373,25 +372,25 @@ class UserServiceImplTest {
                 String hashed = realEncoder.encode(raw);
 
                 UUID id = UUID.randomUUID();
-                UserEntityDTO user = makeUser(id, "Phone User", "phone@mail.com", phone, "SUB_AGENT", hashed);
+                UserEntityDTO userEntityDTO = makeUser(id, "Phone User", "phone@mail.com", phone, "SUB_AGENT", hashed);
 
                 when(userRepositories.findByUserEntityDTOPhoneNumber(phone))
-                        .thenReturn(Optional.of(user));
+                        .thenReturn(Optional.of(userEntityDTO));
 
                 when(userAuthJWT.generateAuthToken(any(UserEntityDTO.class), eq(3600)))
                         .thenReturn("jwt-xyz");
 
-                RestApiResponse<Object> resp = userService.login(makeLogin(phone, raw));
+                RestApiResponse<Object> restApiResponse = userService.login(makeLogin(phone, raw));
 
-                assertEquals(HttpStatus.OK.value(), resp.getRestAPIResponseCode());
-                assertEquals("User login successful", resp.getRestAPIResponseMessage());
-                UserLoginResponse body = (UserLoginResponse) resp.getRestAPIResponseResults();
-                assertEquals("jwt-xyz", body.getUserLoginResponseToken());
-                assertEquals(id, body.getUserEntityDTOId());
-                assertEquals("Phone User", body.getUserEntityDTOFullName());
-                assertEquals("phone@mail.com", body.getUserEntityDTOEmail());
-                assertEquals(phone, body.getUserEntityDTOPhoneNumber());
-                assertEquals("SUB_AGENT", body.getUserEntityDTORoleName());
+                assertEquals(HttpStatus.OK.value(), restApiResponse.getRestAPIResponseCode());
+                assertEquals("User login successful", restApiResponse.getRestAPIResponseMessage());
+                UserLoginResponse userLoginResponse = (UserLoginResponse) restApiResponse.getRestAPIResponseResults();
+                assertEquals("jwt-xyz", userLoginResponse.getUserLoginResponseToken());
+                assertEquals(id, userLoginResponse.getUserEntityDTOId());
+                assertEquals("Phone User", userLoginResponse.getUserEntityDTOFullName());
+                assertEquals("phone@mail.com", userLoginResponse.getUserEntityDTOEmail());
+                assertEquals(phone, userLoginResponse.getUserEntityDTOPhoneNumber());
+                assertEquals("SUB_AGENT", userLoginResponse.getUserEntityDTORoleName());
             }
         }
 
@@ -421,9 +420,9 @@ class UserServiceImplTest {
                 String hashed = "$2a$10$hash...";
                 UUID id = UUID.randomUUID();
 
-                UserEntityDTO user = makeUser(id, "User", email, "0812", "AGENT", hashed);
+                UserEntityDTO userEntityDTO = makeUser(id, "User", email, "0812", "AGENT", hashed);
 
-                when(userRepositories.findByUserEntityDTOEmailIgnoreCase(email)).thenReturn(Optional.of(user));
+                when(userRepositories.findByUserEntityDTOEmailIgnoreCase(email)).thenReturn(Optional.of(userEntityDTO));
                 when(securityConfig.passwordEncoder().matches(raw, hashed)).thenReturn(false);
 
                 IllegalStateException ex = assertThrows(IllegalStateException.class,
@@ -440,54 +439,55 @@ class UserServiceImplTest {
         @Nested
         @DisplayName("Positive Case")
         class GenerateReferralCodePositiveCase {
+
             @Test
             @DisplayName("200 - success generate and upgrade SUB_AGENT -> AGENT")
             void generateReferralCode_success_withRoleUpgrade() {
                 UUID userId = UUID.randomUUID();
 
-                UserEntityDTO user = new UserEntityDTO();
-                user.setUserEntityDTOId(userId);
-                user.setUserEntityDTOFullName("Sub Agent One");
-                user.setUserEntityDTORoleId(UUID.randomUUID());
-                user.setUserEntityDTORoleName(ROLE_SUB_AGENT);
+                UserEntityDTO userEntityDTO = new UserEntityDTO();
+                userEntityDTO.setUserEntityDTOId(userId);
+                userEntityDTO.setUserEntityDTOFullName("Sub Agent One");
+                userEntityDTO.setUserEntityDTORoleId(UUID.randomUUID());
+                userEntityDTO.setUserEntityDTORoleName(ROLE_SUB_AGENT);
 
-                when(userRepositories.findById(userId)).thenReturn(Optional.of(user));
+                when(userRepositories.findById(userId)).thenReturn(Optional.of(userEntityDTO));
                 when(tUserReferralCodeRepositories.existsByUserReferralEntityDTOUserId(userId)).thenReturn(false);
 
-                ArgumentCaptor<UserReferralCodeEntityDTO> refCap = ArgumentCaptor.forClass(UserReferralCodeEntityDTO.class);
-                when(tUserReferralCodeRepositories.save(refCap.capture()))
+                ArgumentCaptor<UserReferralCodeEntityDTO> userReferralCodeEntityDTOArgumentCaptor = ArgumentCaptor.forClass(UserReferralCodeEntityDTO.class);
+                when(tUserReferralCodeRepositories.save(userReferralCodeEntityDTOArgumentCaptor.capture()))
                         .thenAnswer(inv -> inv.getArgument(0));
 
-                RestApiResponse<Object> resp = userService.generateReferralCode(userId);
+                RestApiResponse<Object> restApiResponse = userService.generateReferralCode(userId);
 
-                assertEquals(HttpStatus.OK.value(), resp.getRestAPIResponseCode());
-                assertEquals("Referral referralCode generated successfully", resp.getRestAPIResponseMessage());
-                UserReferralCodeResponse body = (UserReferralCodeResponse) resp.getRestAPIResponseResults();
-                assertNotNull(body.getUserReferralEntityDTOId());
-                assertNotNull(body.getUserReferralEntityDTOCreatedAt());
+                assertEquals(HttpStatus.OK.value(), restApiResponse.getRestAPIResponseCode());
+                assertEquals("Referral referralCode generated successfully", restApiResponse.getRestAPIResponseMessage());
+                UserReferralCodeResponse userReferralCodeResponse = (UserReferralCodeResponse) restApiResponse.getRestAPIResponseResults();
+                assertNotNull(userReferralCodeResponse.getUserReferralEntityDTOId());
+                assertNotNull(userReferralCodeResponse.getUserReferralEntityDTOCreatedAt());
 
-                UserReferralCodeEntityDTO saved = refCap.getValue();
+                UserReferralCodeEntityDTO saved = userReferralCodeEntityDTOArgumentCaptor.getValue();
                 String actualCode = saved.getUserReferralEntityDTOCode();
 
-                assertEquals(actualCode, body.getUserReferralEntityDTOCode());
+                assertEquals(actualCode, userReferralCodeResponse.getUserReferralEntityDTOCode());
                 assertNotNull(actualCode);
                 assertFalse(actualCode.isBlank());
                 assertTrue(actualCode.matches("[A-Z0-9]{6,12}"));
 
-                assertEquals(ROLE_AGENT, user.getUserEntityDTORoleName());
-                verify(userRepositories).save(user);
+                assertEquals(ROLE_AGENT, userEntityDTO.getUserEntityDTORoleName());
+                verify(userRepositories).save(userEntityDTO);
                 verify(auditLogProducerServiceImpl, times(1)).logUpdate(
                         eq(TableNameEntityUtility.TABLE_USERS),
                         eq(userId), anyMap(), anyMap(),
                         eq(userId), eq("Sub Agent One"),
-                        eq(user.getUserEntityDTORoleId()), eq(ROLE_AGENT),
+                        eq(userEntityDTO.getUserEntityDTORoleId()), eq(ROLE_AGENT),
                         anyString(), anyString()
                 );
                 verify(auditLogProducerServiceImpl, times(1)).logCreate(
                         eq(TableNameEntityUtility.TABLE_USER_REFERRAL_CODE),
                         eq(saved.getUserReferralEntityDTOId()), anyMap(),
                         eq(userId), eq("Sub Agent One"),
-                        eq(user.getUserEntityDTORoleId()), eq(ROLE_AGENT),
+                        eq(userEntityDTO.getUserEntityDTORoleId()), eq(ROLE_AGENT),
                         anyString(), anyString()
                 );
             }
@@ -498,36 +498,36 @@ class UserServiceImplTest {
             void generateReferralCode_success_withoutRoleUpgrade() {
                 UUID userId = UUID.randomUUID();
 
-                UserEntityDTO user = new UserEntityDTO();
-                user.setUserEntityDTOId(userId);
-                user.setUserEntityDTOFullName("Agent Two");
-                user.setUserEntityDTORoleId(UUID.randomUUID());
-                user.setUserEntityDTORoleName(ROLE_AGENT);
+                UserEntityDTO userEntityDTO = new UserEntityDTO();
+                userEntityDTO.setUserEntityDTOId(userId);
+                userEntityDTO.setUserEntityDTOFullName("Agent Two");
+                userEntityDTO.setUserEntityDTORoleId(UUID.randomUUID());
+                userEntityDTO.setUserEntityDTORoleName(ROLE_AGENT);
 
-                when(userRepositories.findById(userId)).thenReturn(Optional.of(user));
+                when(userRepositories.findById(userId)).thenReturn(Optional.of(userEntityDTO));
                 when(tUserReferralCodeRepositories.existsByUserReferralEntityDTOUserId(userId)).thenReturn(false);
 
-                ArgumentCaptor<UserReferralCodeEntityDTO> refCap = ArgumentCaptor.forClass(UserReferralCodeEntityDTO.class);
-                when(tUserReferralCodeRepositories.save(refCap.capture()))
+                ArgumentCaptor<UserReferralCodeEntityDTO> userReferralCodeEntityDTOArgumentCaptor = ArgumentCaptor.forClass(UserReferralCodeEntityDTO.class);
+                when(tUserReferralCodeRepositories.save(userReferralCodeEntityDTOArgumentCaptor.capture()))
                         .thenAnswer(inv -> inv.getArgument(0));
 
-                RestApiResponse<Object> resp = userService.generateReferralCode(userId);
+                RestApiResponse<Object> restApiResponse = userService.generateReferralCode(userId);
 
-                UserReferralCodeEntityDTO saved = refCap.getValue();
+                UserReferralCodeEntityDTO saved = userReferralCodeEntityDTOArgumentCaptor.getValue();
                 String actualCode = saved.getUserReferralEntityDTOCode();
 
-                assertEquals(HttpStatus.OK.value(), resp.getRestAPIResponseCode());
-                assertEquals("Referral referralCode generated successfully", resp.getRestAPIResponseMessage());
-                UserReferralCodeResponse body = (UserReferralCodeResponse) resp.getRestAPIResponseResults();
-                assertNotNull(body.getUserReferralEntityDTOId());
-                assertNotNull(body.getUserReferralEntityDTOCreatedAt());
+                assertEquals(HttpStatus.OK.value(), restApiResponse.getRestAPIResponseCode());
+                assertEquals("Referral referralCode generated successfully", restApiResponse.getRestAPIResponseMessage());
+                UserReferralCodeResponse userReferralCodeResponse = (UserReferralCodeResponse) restApiResponse.getRestAPIResponseResults();
+                assertNotNull(userReferralCodeResponse.getUserReferralEntityDTOId());
+                assertNotNull(userReferralCodeResponse.getUserReferralEntityDTOCreatedAt());
 
-                assertEquals(actualCode, body.getUserReferralEntityDTOCode());
+                assertEquals(actualCode, userReferralCodeResponse.getUserReferralEntityDTOCode());
                 assertNotNull(actualCode);
                 assertFalse(actualCode.isBlank());
                 assertTrue(actualCode.matches("[A-Z0-9]{6,12}"));
 
-                assertEquals(ROLE_AGENT, user.getUserEntityDTORoleName());
+                assertEquals(ROLE_AGENT, userEntityDTO.getUserEntityDTORoleName());
                 verify(userRepositories, never()).save(any());
 
                 verify(auditLogProducerServiceImpl, never()).logUpdate(
@@ -540,7 +540,7 @@ class UserServiceImplTest {
                         anyMap(),
                         eq(userId),
                         eq("Agent Two"),
-                        eq(user.getUserEntityDTORoleId()),
+                        eq(userEntityDTO.getUserEntityDTORoleId()),
                         eq(ROLE_AGENT),
                         anyString(),
                         anyString()
@@ -569,13 +569,13 @@ class UserServiceImplTest {
             void generateReferralCode_alreadyHasReferral() {
                 UUID userId = UUID.randomUUID();
 
-                UserEntityDTO user = new UserEntityDTO();
-                user.setUserEntityDTOId(userId);
-                user.setUserEntityDTOFullName("Has Code");
-                user.setUserEntityDTORoleId(UUID.randomUUID());
-                user.setUserEntityDTORoleName(ROLE_AGENT);
+                UserEntityDTO userEntityDTO = new UserEntityDTO();
+                userEntityDTO.setUserEntityDTOId(userId);
+                userEntityDTO.setUserEntityDTOFullName("Has Code");
+                userEntityDTO.setUserEntityDTORoleId(UUID.randomUUID());
+                userEntityDTO.setUserEntityDTORoleName(ROLE_AGENT);
 
-                when(userRepositories.findById(userId)).thenReturn(Optional.of(user));
+                when(userRepositories.findById(userId)).thenReturn(Optional.of(userEntityDTO));
                 when(tUserReferralCodeRepositories.existsByUserReferralEntityDTOUserId(userId)).thenReturn(true);
 
                 CoreThrowHandlerException ex = assertThrows(CoreThrowHandlerException.class,
@@ -592,13 +592,13 @@ class UserServiceImplTest {
             @DisplayName("500 Generator null/empty")
             void generateReferralCode_generatorReturnsEmpty_noThrow() {
                 UUID userId = UUID.randomUUID();
-                UserEntityDTO user = new UserEntityDTO();
-                user.setUserEntityDTOId(userId);
-                user.setUserEntityDTOFullName("No Code");
-                user.setUserEntityDTORoleId(UUID.randomUUID());
-                user.setUserEntityDTORoleName(ROLE_AGENT);
+                UserEntityDTO userEntityDTO = new UserEntityDTO();
+                userEntityDTO.setUserEntityDTOId(userId);
+                userEntityDTO.setUserEntityDTOFullName("No Code");
+                userEntityDTO.setUserEntityDTORoleId(UUID.randomUUID());
+                userEntityDTO.setUserEntityDTORoleName(ROLE_AGENT);
 
-                when(userRepositories.findById(userId)).thenReturn(Optional.of(user));
+                when(userRepositories.findById(userId)).thenReturn(Optional.of(userEntityDTO));
                 when(tUserReferralCodeRepositories.existsByUserReferralEntityDTOUserId(userId)).thenReturn(false);
                 when(referralCodeGenerator.generateReferralCode()).thenReturn("");
 
@@ -619,18 +619,18 @@ class UserServiceImplTest {
                 commonBoot();
 
                 UUID userId = UUID.randomUUID();
-                UserReferralCodeEntityDTO entity = makeReferralEntity(userId, "REF-XYZ123", LocalDateTime.now());
+                UserReferralCodeEntityDTO userReferralCodeEntityDTO = makeReferralEntity(userId, "REF-XYZ123", LocalDateTime.now());
                 when(tUserReferralCodeRepositories.findByUserReferralEntityDTOUserId(userId))
-                        .thenReturn(Optional.of(entity));
+                        .thenReturn(Optional.of(userReferralCodeEntityDTO));
 
-                RestApiResponse<Object> resp = userService.getReferralCode(userId);
-                assertEquals(HttpStatus.OK.value(), resp.getRestAPIResponseCode());
-                assertEquals("Referral code retrieved successfully", resp.getRestAPIResponseMessage());
+                RestApiResponse<Object> restApiResponse = userService.getReferralCode(userId);
+                assertEquals(HttpStatus.OK.value(), restApiResponse.getRestAPIResponseCode());
+                assertEquals("Referral code retrieved successfully", restApiResponse.getRestAPIResponseMessage());
 
-                UserReferralCodeResponse body = (UserReferralCodeResponse) resp.getRestAPIResponseResults();
-                assertEquals(entity.getUserReferralEntityDTOId(), body.getUserReferralEntityDTOId());
-                assertEquals("REF-XYZ123", body.getUserReferralEntityDTOCode());
-                assertNotNull(body.getUserReferralEntityDTOCreatedAt());
+                UserReferralCodeResponse userReferralCodeResponse = (UserReferralCodeResponse) restApiResponse.getRestAPIResponseResults();
+                assertEquals(userReferralCodeEntityDTO.getUserReferralEntityDTOId(), userReferralCodeResponse.getUserReferralEntityDTOId());
+                assertEquals("REF-XYZ123", userReferralCodeResponse.getUserReferralEntityDTOCode());
+                assertNotNull(userReferralCodeResponse.getUserReferralEntityDTOCreatedAt());
             }
         }
 
@@ -665,21 +665,21 @@ class UserServiceImplTest {
                 commonBoot();
 
                 UUID userId = UUID.randomUUID();
-                UserEntityDTO user = makeUser(userId, "Jane Doe", "jane@mail.com", "081234567890", "AGENT", null);
-                when(userRepositories.findById(userId)).thenReturn(Optional.of(user));
+                UserEntityDTO userEntityDTO = makeUser(userId, "Bayu wijaya", "bayu12@mail.com", "081234567890", "AGENT", null);
+                when(userRepositories.findById(userId)).thenReturn(Optional.of(userEntityDTO));
 
-                RestApiResponse<Object> resp = userService.getUserProfile(userId);
-                assertEquals(HttpStatus.OK.value(), resp.getRestAPIResponseCode());
-                assertEquals("User profile retrieved successfully", resp.getRestAPIResponseMessage());
+                RestApiResponse<Object> restApiResponse = userService.getUserProfile(userId);
+                assertEquals(HttpStatus.OK.value(), restApiResponse.getRestAPIResponseCode());
+                assertEquals("User profile retrieved successfully", restApiResponse.getRestAPIResponseMessage());
 
-                com.jdt16.agenin.users.dto.response.UserProfileResponse body =
-                        (com.jdt16.agenin.users.dto.response.UserProfileResponse) resp.getRestAPIResponseResults();
+                UserProfileResponse userProfileResponse =
+                        (UserProfileResponse) restApiResponse.getRestAPIResponseResults();
 
-                assertEquals(userId, body.getUserEntityDTOId());
-                assertEquals("Jane Doe", body.getUserEntityDTOFullName());
-                assertEquals("jane@mail.com", body.getUserEntityDTOEmail());
-                assertEquals("081234567890", body.getUserEntityDTOPhoneNumber());
-                assertEquals("AGENT", body.getUserEntityDTORoleName());
+                assertEquals(userId, userProfileResponse.getUserEntityDTOId());
+                assertEquals("Bayu wijaya", userProfileResponse.getUserEntityDTOFullName());
+                assertEquals("bayu12@mail.com", userProfileResponse.getUserEntityDTOEmail());
+                assertEquals("081234567890", userProfileResponse.getUserEntityDTOPhoneNumber());
+                assertEquals("AGENT", userProfileResponse.getUserEntityDTORoleName());
             }
         }
 
@@ -713,33 +713,32 @@ class UserServiceImplTest {
                 commonBoot();
 
                 UUID refUserId = UUID.randomUUID();
-                UUID c1 = UUID.randomUUID();
-                UUID c2 = UUID.randomUUID();
+                UUID parentBalanceId = UUID.randomUUID();
 
-                UsersReferralEntityDTO d1 = makeDownline(c1, "Child One", "0812-111", "c1@mail.com", refUserId);
-                UsersReferralEntityDTO d2 = makeDownline(c2, "Child Two", "0812-222", "c2@mail.com", refUserId);
+                UUID uuid = UUID.randomUUID();
+                UUID uuid1 = UUID.randomUUID();
+
+                UsersReferralEntityDTO childOne =
+                        makeDownline(uuid, "Child One", "0812-111", "c1@mail.com", refUserId);
+                UsersReferralEntityDTO childTwo =
+                        makeDownline(uuid1, "Child Two", "0812-222", "c2@mail.com", refUserId);
 
                 when(tUsersReferralRepositories.findAllByUsersReferralEntityDTOReferenceUserId(refUserId))
-                        .thenReturn(List.of(d1, d2));
+                        .thenReturn(List.of(childOne, childTwo));
 
-                when(userBalanceRepositories.findBalanceAmountByUserId(c1))
-                        .thenReturn(Optional.of(new BigDecimal("150000")));
-                when(userBalanceRepositories.findBalanceAmountByUserId(c2))
-                        .thenReturn(Optional.empty());
+                when(userBalanceRepositories.findBalanceIdByUserId(refUserId))
+                        .thenReturn(Optional.of(parentBalanceId));
 
-                RestApiResponse<Object> resp = userService.getUserDownline(refUserId);
+                when(usersBalanceHistoricalRepositories.getTotalCommissionFromChild(parentBalanceId, uuid))
+                        .thenReturn(new BigDecimal("150000"));
+                when(usersBalanceHistoricalRepositories.getTotalCommissionFromChild(parentBalanceId, uuid1))
+                        .thenReturn(BigDecimal.ZERO);
 
-                assertEquals(HttpStatus.OK.value(), resp.getRestAPIResponseCode());
-                assertEquals("Downline retrieved successfully", resp.getRestAPIResponseMessage());
-                assertTrue(resp.getRestAPIResponseResults() instanceof List<?>);
+                RestApiResponse<Object> restApiResponse = userService.getUserDownline(refUserId);
 
-                @SuppressWarnings("unchecked")
-                List<com.jdt16.agenin.users.dto.response.UsersDownlineResponse> body =
-                        (List<com.jdt16.agenin.users.dto.response.UsersDownlineResponse>) resp.getRestAPIResponseResults();
-
-                assertEquals(2, body.size());
-                assertEquals(new BigDecimal("150000"), body.get(0).getUsersReferralEntityDTOInviteeCommissionValue());
-                assertEquals(BigDecimal.ZERO, body.get(1).getUsersReferralEntityDTOInviteeCommissionValue());
+                assertEquals(HttpStatus.OK.value(), restApiResponse.getRestAPIResponseCode());
+                assertEquals("Downline retrieved successfully", restApiResponse.getRestAPIResponseMessage());
+                assertTrue(restApiResponse.getRestAPIResponseResults() instanceof List<?>);
             }
         }
 
@@ -776,42 +775,43 @@ class UserServiceImplTest {
                 BigDecimal oldValue = new BigDecimal("10.00");
                 BigDecimal newValue = new BigDecimal("15.50");
 
-                CommissionEntityDTO entity = new CommissionEntityDTO();
-                entity.setCommissionsEntityDTOProductId(productId);
-                entity.setCommissionsEntityDTOProductName("Open Bank BCA");
-                entity.setCommissionsEntityDTOValue(oldValue);
-                entity.setCommissionsEntityDTOCreatedDate(LocalDateTime.now().minusDays(1));
-                entity.setCommissionsEntityDTOUpdatedDate(LocalDateTime.now().minusHours(3));
+                CommissionEntityDTO commissionEntityDTO = new CommissionEntityDTO();
+                commissionEntityDTO.setCommissionsEntityDTOProductId(productId);
+                commissionEntityDTO.setCommissionsEntityDTOProductName("Open Bank BCA");
+                commissionEntityDTO.setCommissionsEntityDTOValue(oldValue);
+                commissionEntityDTO.setCommissionsEntityDTOCreatedDate(LocalDateTime.now().minusDays(1));
+                commissionEntityDTO.setCommissionsEntityDTOUpdatedDate(LocalDateTime.now().minusHours(3));
 
-                UserEntityDTO admin = new UserEntityDTO();
-                admin.setUserEntityDTOId(adminId);
-                admin.setUserEntityDTOFullName("Admin One");
-                admin.setUserEntityDTORoleId(UUID.randomUUID());
-                admin.setUserEntityDTORoleName("ADMIN");
+                UserEntityDTO userEntityDTO = new UserEntityDTO();
+                userEntityDTO.setUserEntityDTOId(adminId);
+                userEntityDTO.setUserEntityDTOFullName("Admin One");
+                userEntityDTO.setUserEntityDTORoleId(UUID.randomUUID());
+                userEntityDTO.setUserEntityDTORoleName("ADMIN");
 
-                UserAdminUpdateCommissionsRequest req = new UserAdminUpdateCommissionsRequest();
-                req.setCommissionsEntityDTOValue(newValue);
+                UserAdminUpdateCommissionsRequest userAdminUpdateCommissionsRequest = new UserAdminUpdateCommissionsRequest();
+                userAdminUpdateCommissionsRequest.setCommissionsEntityDTOValue(newValue);
 
                 when(commissionRepositories.findByCommissionsEntityDTOProductId(productId))
-                        .thenReturn(Optional.of(entity));
+                        .thenReturn(Optional.of(commissionEntityDTO));
                 when(userRepositories.findByUserEntityDTOId(adminId))
-                        .thenReturn(Optional.of(admin));
+                        .thenReturn(Optional.of(userEntityDTO));
 
                 ArgumentCaptor<CommissionEntityDTO> entityCap = ArgumentCaptor.forClass(CommissionEntityDTO.class);
                 when(commissionRepositories.save(entityCap.capture()))
                         .thenAnswer(inv -> inv.getArgument(0));
 
-                RestApiResponse<Object> resp = userService.updateCommissions(productId, req);
+                RestApiResponse<Object> restApiResponse = userService.updateCommissions(productId, userAdminUpdateCommissionsRequest);
 
-                assertEquals(HttpStatus.OK.value(), resp.getRestAPIResponseCode());
-                assertEquals("Commissions updated successfully", resp.getRestAPIResponseMessage());
-                UserAdminUpdateCommissionsResponse body =
-                        (UserAdminUpdateCommissionsResponse) resp.getRestAPIResponseResults();
-                assertEquals("ADMIN", body.getUpdateCommissionsEntityDTORoleName());
-                assertEquals("Admin One", body.getUpdateCommissionsEntityDTOUserFullName());
-                assertEquals("Open Bank BCA", body.getUpdateCommissionsEntityDTOProductName());
-                assertEquals(newValue, body.getUpdateCommissionsEntityDTOValue());
-                assertNotNull(body.getUpdateCommissionsEntityDTOUpdatedDate());
+                assertEquals(HttpStatus.OK.value(), restApiResponse.getRestAPIResponseCode());
+                assertEquals("Commissions updated successfully", restApiResponse.getRestAPIResponseMessage());
+
+                UserAdminUpdateCommissionsResponse userAdminUpdateCommissionsResponse =
+                        (UserAdminUpdateCommissionsResponse) restApiResponse.getRestAPIResponseResults();
+                assertEquals("ADMIN", userAdminUpdateCommissionsResponse.getUpdateCommissionsEntityDTORoleName());
+                assertEquals("Admin One", userAdminUpdateCommissionsResponse.getUpdateCommissionsEntityDTOUserFullName());
+                assertEquals("Open Bank BCA", userAdminUpdateCommissionsResponse.getUpdateCommissionsEntityDTOProductName());
+                assertEquals(newValue, userAdminUpdateCommissionsResponse.getUpdateCommissionsEntityDTOValue());
+                assertNotNull(userAdminUpdateCommissionsResponse.getUpdateCommissionsEntityDTOUpdatedDate());
 
                 CommissionEntityDTO saved = entityCap.getValue();
                 assertEquals(productId, saved.getCommissionsEntityDTOProductId());
@@ -823,9 +823,9 @@ class UserServiceImplTest {
                         eq(productId),
                         anyMap(),
                         anyMap(),
-                        eq(admin.getUserEntityDTOId()),
+                        eq(userEntityDTO.getUserEntityDTOId()),
                         eq("Admin One"),
-                        eq(admin.getUserEntityDTORoleId()),
+                        eq(userEntityDTO.getUserEntityDTORoleId()),
                         eq("ADMIN"),
                         anyString(),
                         anyString()
@@ -840,14 +840,14 @@ class UserServiceImplTest {
             @DisplayName("404 - product not found")
             void updateCommissions_productNotFound() {
                 UUID productId = UUID.randomUUID();
-                UserAdminUpdateCommissionsRequest req = new UserAdminUpdateCommissionsRequest();
-                req.setCommissionsEntityDTOValue(new BigDecimal("5"));
+                UserAdminUpdateCommissionsRequest userAdminUpdateCommissionsRequest = new UserAdminUpdateCommissionsRequest();
+                userAdminUpdateCommissionsRequest.setCommissionsEntityDTOValue(new BigDecimal("5"));
 
                 when(commissionRepositories.findByCommissionsEntityDTOProductId(productId))
                         .thenReturn(Optional.empty());
 
                 CoreThrowHandlerException ex = assertThrows(CoreThrowHandlerException.class,
-                        () -> userService.updateCommissions(productId, req));
+                        () -> userService.updateCommissions(productId, userAdminUpdateCommissionsRequest));
 
                 assertTrue(ex.getMessage().contains("Product not found"));
                 verify(userRepositories, never()).findByUserEntityDTOId(any());
@@ -862,23 +862,23 @@ class UserServiceImplTest {
                 UUID productId = UUID.randomUUID();
                 BigDecimal newValue = new BigDecimal("7.5");
 
-                CommissionEntityDTO entity = new CommissionEntityDTO();
-                entity.setCommissionsEntityDTOProductId(productId);
-                entity.setCommissionsEntityDTOProductName("Open Bank Mandiri");
-                entity.setCommissionsEntityDTOValue(new BigDecimal("3"));
-                entity.setCommissionsEntityDTOCreatedDate(LocalDateTime.now().minusDays(2));
-                entity.setCommissionsEntityDTOUpdatedDate(LocalDateTime.now().minusDays(1));
+                CommissionEntityDTO commissionEntityDTO = new CommissionEntityDTO();
+                commissionEntityDTO.setCommissionsEntityDTOProductId(productId);
+                commissionEntityDTO.setCommissionsEntityDTOProductName("Open Bank Mandiri");
+                commissionEntityDTO.setCommissionsEntityDTOValue(new BigDecimal("3"));
+                commissionEntityDTO.setCommissionsEntityDTOCreatedDate(LocalDateTime.now().minusDays(2));
+                commissionEntityDTO.setCommissionsEntityDTOUpdatedDate(LocalDateTime.now().minusDays(1));
 
-                UserAdminUpdateCommissionsRequest req = new UserAdminUpdateCommissionsRequest();
-                req.setCommissionsEntityDTOValue(newValue);
+                UserAdminUpdateCommissionsRequest userAdminUpdateCommissionsRequest = new UserAdminUpdateCommissionsRequest();
+                userAdminUpdateCommissionsRequest.setCommissionsEntityDTOValue(newValue);
 
                 when(commissionRepositories.findByCommissionsEntityDTOProductId(productId))
-                        .thenReturn(Optional.of(entity));
+                        .thenReturn(Optional.of(commissionEntityDTO));
                 when(userRepositories.findByUserEntityDTOId(ColumnNameEntityUtility.USER_ID_ADMIN_VALUE))
                         .thenReturn(Optional.empty());
 
                 CoreThrowHandlerException ex = assertThrows(CoreThrowHandlerException.class,
-                        () -> userService.updateCommissions(productId, req));
+                        () -> userService.updateCommissions(productId, userAdminUpdateCommissionsRequest));
 
                 assertTrue(ex.getMessage().contains("User ADMIN not found"));
                 verify(commissionRepositories, never()).save(any());
@@ -891,29 +891,29 @@ class UserServiceImplTest {
             void updateCommissions_negativeValue() {
                 UUID productId = UUID.randomUUID();
 
-                CommissionEntityDTO entity = new CommissionEntityDTO();
-                entity.setCommissionsEntityDTOProductId(productId);
-                entity.setCommissionsEntityDTOProductName("Open Bank BNI");
-                entity.setCommissionsEntityDTOValue(new BigDecimal("2"));
-                entity.setCommissionsEntityDTOCreatedDate(LocalDateTime.now().minusDays(3));
-                entity.setCommissionsEntityDTOUpdatedDate(LocalDateTime.now().minusDays(1));
+                CommissionEntityDTO commissionEntityDTO = new CommissionEntityDTO();
+                commissionEntityDTO.setCommissionsEntityDTOProductId(productId);
+                commissionEntityDTO.setCommissionsEntityDTOProductName("Open Bank BNI");
+                commissionEntityDTO.setCommissionsEntityDTOValue(new BigDecimal("2"));
+                commissionEntityDTO.setCommissionsEntityDTOCreatedDate(LocalDateTime.now().minusDays(3));
+                commissionEntityDTO.setCommissionsEntityDTOUpdatedDate(LocalDateTime.now().minusDays(1));
 
-                UserAdminUpdateCommissionsRequest req = new UserAdminUpdateCommissionsRequest();
-                req.setCommissionsEntityDTOValue(new BigDecimal("-0.01"));
+                UserAdminUpdateCommissionsRequest userAdminUpdateCommissionsRequest = new UserAdminUpdateCommissionsRequest();
+                userAdminUpdateCommissionsRequest.setCommissionsEntityDTOValue(new BigDecimal("-0.01"));
 
                 when(commissionRepositories.findByCommissionsEntityDTOProductId(productId))
-                        .thenReturn(Optional.of(entity));
+                        .thenReturn(Optional.of(commissionEntityDTO));
 
-                UserEntityDTO admin = new UserEntityDTO();
-                admin.setUserEntityDTOId(ColumnNameEntityUtility.USER_ID_ADMIN_VALUE);
-                admin.setUserEntityDTOFullName("Admin One");
-                admin.setUserEntityDTORoleId(UUID.randomUUID());
-                admin.setUserEntityDTORoleName("ADMIN");
+                UserEntityDTO userEntityDTO = new UserEntityDTO();
+                userEntityDTO.setUserEntityDTOId(ColumnNameEntityUtility.USER_ID_ADMIN_VALUE);
+                userEntityDTO.setUserEntityDTOFullName("Admin One");
+                userEntityDTO.setUserEntityDTORoleId(UUID.randomUUID());
+                userEntityDTO.setUserEntityDTORoleName("ADMIN");
                 when(userRepositories.findByUserEntityDTOId(ColumnNameEntityUtility.USER_ID_ADMIN_VALUE))
-                        .thenReturn(Optional.of(admin));
+                        .thenReturn(Optional.of(userEntityDTO));
 
                 CoreThrowHandlerException ex = assertThrows(CoreThrowHandlerException.class,
-                        () -> userService.updateCommissions(productId, req));
+                        () -> userService.updateCommissions(productId, userAdminUpdateCommissionsRequest));
 
                 assertTrue(ex.getMessage().contains("Commissions value cannot be less than 0"));
 
