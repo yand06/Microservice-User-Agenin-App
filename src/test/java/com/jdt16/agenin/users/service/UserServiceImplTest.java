@@ -438,6 +438,7 @@ class UserServiceImplTest {
         @Nested
         @DisplayName("Positive Case")
         class GenerateReferralCodePositiveCase {
+
             @Test
             @DisplayName("200 - success generate and upgrade SUB_AGENT -> AGENT")
             void generateReferralCode_success_withRoleUpgrade() {
