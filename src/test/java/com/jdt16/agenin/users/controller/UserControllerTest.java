@@ -42,9 +42,9 @@ class UserControllerTest {
     @MockBean
     private UserService userService;
 
-    private static final String HDR_USER = "X-USER-ID";
-    private static final String HDR_REF_USER = "X-REFERENCE-USER-ID";
-    private static final String HDR_PRODUCT = "X-PRODUCT-ID";
+    private static final String HEADER_USER = "X-USER-ID";
+    private static final String HEADER_REFERRAL_USER = "X-REFERENCE-USER-ID";
+    private static final String HEADER_PRODUCT = "X-PRODUCT-ID";
 
     private static <T> RestApiResponse<T> okResponseTyped(T results) {
         RestApiResponse<T> body = new RestApiResponse<>();
@@ -68,20 +68,20 @@ class UserControllerTest {
         @Test
         @DisplayName("200: success")
         void create_success() throws Exception {
-            UserRequest req = new UserRequest();
-            req.setUserEntityDTOFullName("Bayu Wijaya");
-            req.setUserEntityDTOEmail("bayu12@example.com");
-            req.setUserEntityDTOPhoneNumber("081234567890");
-            req.setUserEntityDTOPassword("Secret#123");
-            req.setUserEntityDTOReferralCode("XX1234");
+            UserRequest userRequest = new UserRequest();
+            userRequest.setUserEntityDTOFullName("Bayu Wijaya");
+            userRequest.setUserEntityDTOEmail("bayu12@example.com");
+            userRequest.setUserEntityDTOPhoneNumber("081234567890");
+            userRequest.setUserEntityDTOPassword("Secret#123");
+            userRequest.setUserEntityDTOReferralCode("XX1234");
 
-            UserResponse payload = mock(UserResponse.class);
+            UserResponse userResponse = mock(UserResponse.class);
             when(userService.saveUser(any(UserRequest.class)))
-                    .thenReturn(okResponseTyped(payload));
+                    .thenReturn(okResponseTyped(userResponse));
 
             mvc.perform(post(api(RestApiPathUtility.API_PATH_CREATE))
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(req)))
+                            .content(objectMapper.writeValueAsString(userRequest)))
                     .andExpect(status().isOk())
                     .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.status").value(200))
@@ -114,12 +114,12 @@ class UserControllerTest {
         void generate_success() throws Exception {
             UUID userId = UUID.randomUUID();
 
-            UserReferralCodeResponse payload = mock(UserReferralCodeResponse.class);
+            UserReferralCodeResponse userReferralCodeResponse = mock(UserReferralCodeResponse.class);
             when(userService.generateReferralCode(eq(userId)))
-                    .thenReturn(okResponseTyped(payload));
+                    .thenReturn(okResponseTyped(userReferralCodeResponse));
 
             mvc.perform(post(api(RestApiPathUtility.API_PATH_MODULE_REFERRAL_CODE))
-                            .header(HDR_USER, userId.toString()))
+                            .header(HEADER_USER, userId.toString()))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value(200))
                     .andExpect(jsonPath("$.results", notNullValue()));
@@ -144,17 +144,17 @@ class UserControllerTest {
         @Test
         @DisplayName("200: success")
         void login_success() throws Exception {
-            UserLoginRequest req = new UserLoginRequest();
-            req.setUserIdentifier("bayu12@example.com");
-            req.setUserPassword("Secret#123");
+            UserLoginRequest userLoginRequest = new UserLoginRequest();
+            userLoginRequest.setUserIdentifier("bayu12@example.com");
+            userLoginRequest.setUserPassword("Secret#123");
 
-            UserLoginResponse payload = mock(UserLoginResponse.class);
+            UserLoginResponse userLoginResponse = mock(UserLoginResponse.class);
             when(userService.login(any(UserLoginRequest.class)))
-                    .thenReturn(okResponseTyped(payload));
+                    .thenReturn(okResponseTyped(userLoginResponse));
 
             mvc.perform(post(api(RestApiPathUtility.API_PATH_MODULE_LOGIN))
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(req)))
+                            .content(objectMapper.writeValueAsString(userLoginRequest)))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value(200))
                     .andExpect(jsonPath("$.results", notNullValue()));
@@ -184,12 +184,12 @@ class UserControllerTest {
         void profile_success() throws Exception {
             UUID userId = UUID.randomUUID();
 
-            UserProfileResponse payload = mock(UserProfileResponse.class);
+            UserProfileResponse userProfileResponse = mock(UserProfileResponse.class);
             when(userService.getUserProfile(eq(userId)))
-                    .thenReturn(okResponseTyped(payload));
+                    .thenReturn(okResponseTyped(userProfileResponse));
 
             mvc.perform(get(api(RestApiPathUtility.API_PATH_MODULE_PROFILE))
-                            .header(HDR_USER, userId.toString()))
+                            .header(HEADER_USER, userId.toString()))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value(200))
                     .andExpect(jsonPath("$.results", notNullValue()));
@@ -216,12 +216,12 @@ class UserControllerTest {
         void downline_success() throws Exception {
             UUID refUserId = UUID.randomUUID();
 
-            List<UsersDownlineResponse> payload = List.of(mock(UsersDownlineResponse.class));
+            List<UsersDownlineResponse> usersDownlineResponses = List.of(mock(UsersDownlineResponse.class));
             when(userService.getUserDownline(eq(refUserId)))
-                    .thenReturn(okResponseTyped(payload));
+                    .thenReturn(okResponseTyped(usersDownlineResponses));
 
             mvc.perform(get(api(RestApiPathUtility.API_PATH_MODULE_DOWNLINE))
-                            .header(HDR_REF_USER, refUserId.toString()))
+                            .header(HEADER_REFERRAL_USER, refUserId.toString()))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value(200))
                     .andExpect(jsonPath("$.results").isArray());
@@ -248,12 +248,12 @@ class UserControllerTest {
         void get_referral_code_success() throws Exception {
             UUID userId = UUID.randomUUID();
 
-            UserReferralCodeResponse payload = mock(UserReferralCodeResponse.class);
+            UserReferralCodeResponse userReferralCodeResponse = mock(UserReferralCodeResponse.class);
             when(userService.getReferralCode(eq(userId)))
-                    .thenReturn(okResponseTyped(payload));
+                    .thenReturn(okResponseTyped(userReferralCodeResponse));
 
             mvc.perform(get(api(RestApiPathUtility.API_PATH_MODULE_REFERRAL_CODE))
-                            .header(HDR_USER, userId.toString()))
+                            .header(HEADER_USER, userId.toString()))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value(200))
                     .andExpect(jsonPath("$.results", notNullValue()));
@@ -280,17 +280,17 @@ class UserControllerTest {
         void update_commissions_success() throws Exception {
             UUID productId = UUID.randomUUID();
 
-            UserAdminUpdateCommissionsRequest req = new UserAdminUpdateCommissionsRequest();
-            req.setCommissionsEntityDTOValue(new BigDecimal("10.000"));
+            UserAdminUpdateCommissionsRequest userAdminUpdateCommissionsRequest = new UserAdminUpdateCommissionsRequest();
+            userAdminUpdateCommissionsRequest.setCommissionsEntityDTOValue(new BigDecimal("10.000"));
 
-            UserAdminUpdateCommissionsRequest payload = mock(UserAdminUpdateCommissionsRequest.class);
+            UserAdminUpdateCommissionsRequest userAdminUpdateCommissionsRequest1 = mock(UserAdminUpdateCommissionsRequest.class);
             when(userService.updateCommissions(eq(productId), any(UserAdminUpdateCommissionsRequest.class)))
-                    .thenReturn(okResponseTyped(payload));
+                    .thenReturn(okResponseTyped(userAdminUpdateCommissionsRequest1));
 
             mvc.perform(patch(api(RestApiPathUtility.API_PATH_MODULE_UPDATE_COMMISSIONS))
-                            .header(HDR_PRODUCT, productId.toString())
+                            .header(HEADER_PRODUCT, productId.toString())
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(req)))
+                            .content(objectMapper.writeValueAsString(userAdminUpdateCommissionsRequest)))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value(200))
                     .andExpect(jsonPath("$.results", notNullValue()));
@@ -318,7 +318,7 @@ class UserControllerTest {
             UUID productId = UUID.randomUUID();
 
             mvc.perform(patch(api(RestApiPathUtility.API_PATH_MODULE_UPDATE_COMMISSIONS))
-                            .header(HDR_PRODUCT, productId.toString())
+                            .header(HEADER_PRODUCT, productId.toString())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
                     .andExpect(status().isBadRequest());
